@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mapbox_gl/mapbox_gl.dart' as gl;
 import '../core/theme/bolt_theme.dart';
 
+const String _MAPBOX_TOKEN = String.fromEnvironment(
+  'MAPBOX_ACCESS_TOKEN',
+  defaultValue: 'pk.eyJ1IjoiZnJlZGp5IiwiYSI6ImNtbmphZ2tiMDBnMjQycnFyNnh0cXF0cmYifQ.eubs9uIGOVmbyfXJakLo9g'
+);
+
 class LiveMapScreen extends StatefulWidget {
   const LiveMapScreen({Key? key}) : super(key: key);
 
@@ -48,7 +53,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
       body: Stack(
         children: [
           gl.MapboxMap(
-            accessToken: const String.fromEnvironment('MAPBOX_ACCESS_TOKEN', defaultValue: 'YOUR_MAPBOX_TOKEN'),
+            accessToken: _MAPBOX_TOKEN,
             initialCameraPosition: const gl.CameraPosition(
               target: gl.LatLng(-1.2921, 36.8219),
               zoom: 13.0,

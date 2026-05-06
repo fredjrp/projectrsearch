@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:mapbox_gl/mapbox_gl.dart' as gl;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/theme/bolt_theme.dart';
 import 'profile_screen.dart';
+
+const String _MAPBOX_TOKEN = String.fromEnvironment(
+  'MAPBOX_ACCESS_TOKEN',
+  defaultValue: 'pk.eyJ1IjoiZnJlZGp5IiwiYSI6ImNtbmphZ2tiMDBnMjQycnFyNnh0cXF0cmYifQ.eubs9uIGOVmbyfXJakLo9g'
+);
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({Key? key}) : super(key: key);
@@ -18,14 +24,25 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   void _onMapCreated(gl.MapboxMapController controller) {
     _mapController = controller;
-    // Add mock drivers nearby
-    controller.addSymbol(
-      const gl.SymbolOptions(
-        geometry: gl.LatLng(-1.2921, 36.8219), // Nairobi CBD mock
-        iconImage: "car-15", // Need to ensure mapbox icon exists or load custom asset
-        iconSize: 2.0,
-      ),
-    );
+  }
+
+  void _updateDriverMarkers(List<DocumentSnapshot> drivers) {
+    if (_mapController == null) return;
+    _mapController!.clearSymbols();
+    
+    for (var doc in drivers) {
+      var data = doc.data() as Map<String, dynamic>?;
+      if (data != null && data.containsKey('location')) {
+        GeoPoint loc = data['location'];
+        _mapController!.addSymbol(
+          gl.SymbolOptions(
+            geometry: gl.LatLng(loc.latitude, loc.longitude),
+            iconImage: "car-15", // Ensure this icon exists in Mapbox style
+            iconSize: 2.0,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -36,21 +53,32 @@ class _StudentDashboardState extends State<StudentDashboard> {
         minHeight: 250.0,
         maxHeight: MediaQuery.of(context).size.height * 0.8,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
-        boxShadow: const [
-          BoxShadow(blurRadius: 10.0, color: Colors.black12),
-        ],
+        boxShadow: const [BoxShadow(blurRadius: 10.0, color: Colors.black12)],
         panelBuilder: (ScrollController sc) => _buildPanel(sc),
         body: Stack(
           children: [
-            gl.MapboxMap(
-              accessToken: const String.fromEnvironment('MAPBOX_ACCESS_TOKEN', defaultValue: 'YOUR_MAPBOX_TOKEN'),
-              initialCameraPosition: const gl.CameraPosition(
-                target: gl.LatLng(-1.2921, 36.8219),
-                zoom: 14.0,
-              ),
-              onMapCreated: _onMapCreated,
-              myLocationEnabled: true,
-              myLocationTrackingMode: gl.MyLocationTrackingMode.Tracking,
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('drivers')
+                  .where('isOnline', isEqualTo: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _updateDriverMarkers(snapshot.data!.docs);
+                  });
+                }
+                return gl.MapboxMap(
+                  accessToken: _MAPBOX_TOKEN,
+                  initialCameraPosition: const gl.CameraPosition(
+                    target: gl.LatLng(-1.2921, 36.8219), // Nairobi CBD default
+                    zoom: 14.0,
+                  ),
+                  onMapCreated: _onMapCreated,
+                  myLocationEnabled: true,
+                  myLocationTrackingMode: gl.MyLocationTrackingMode.Tracking,
+                );
+              },
             ),
             // Menu Button
             Positioned(

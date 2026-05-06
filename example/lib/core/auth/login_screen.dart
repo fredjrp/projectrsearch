@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'email_signup_screen.dart';
 import '../../student/student_dashboard.dart';
 import '../../driver/driver_dashboard.dart';
+import '../../driver/driver_registration_screen.dart';
+import '../../driver/pending_verification_screen.dart';
 import '../theme/bolt_theme.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final String appType; // 'student' or 'driver'
@@ -16,16 +20,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _smsController = TextEditingController();
+  final AuthService _authService = AuthService();
+  
   bool _codeSent = false;
+  bool _isLoading = false;
   String _errorMessage = '';
 
-  void _validateAndSendCode() {
+  Future<void> _validateAndSendCode() async {
     String phone = _phoneController.text.trim();
-    // Simple Kenyan phone validation
-    // Either starts with 07, 01, 254, +254 and has correct length
-    RegExp kenyanPhoneRegExp = RegExp(r'^(?:254|\+254|0)?(7(?:(?:[129][0-9])|(?:0[0-8])|(4[0-1]))[0-9]{6}|1(?:[1][0-1])[0-9]{6})$');
-    
-    // Looser regex just for mockup purposes if needed, but let's stick to a robust one
     RegExp basicKenyan = RegExp(r'^(\+254|0)?(7|1)\d{8}$');
 
     if (phone.isEmpty) {
@@ -37,33 +39,89 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _errorMessage = 'Please enter a valid Kenyan phone number (e.g. 0712345678)');
       return;
     }
+    
+    // Convert to E.164 format for Firebase if it starts with 0
+    if (phone.startsWith('0')) {
+      phone = '+254${phone.substring(1)}';
+    } else if (!phone.startsWith('+')) {
+      phone = '+$phone';
+    }
 
     setState(() {
       _errorMessage = '';
-      _codeSent = true;
+      _isLoading = true;
     });
 
-    // TODO: Integrate actual FirebaseAuth verifyPhoneNumber
+    await _authService.sendOtp(
+      phoneNumber: phone,
+      onCodeSent: () {
+        if (!mounted) return;
+        setState(() {
+          _codeSent = true;
+          _isLoading = false;
+        });
+      },
+      onError: (error) {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = error;
+          _isLoading = false;
+        });
+      },
+    );
   }
 
-  void _verifySmsCode() {
+  Future<void> _verifySmsCode() async {
     if (_smsController.text.length < 6) {
       setState(() => _errorMessage = 'Please enter a valid 6-digit code');
       return;
     }
 
-    // TODO: Verify with Firebase auth credentials
-    // Mock success routing
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      await _authService.verifyOtp(smsCode: _smsController.text);
+      await _handlePostLoginRouting();
+    } catch (e) {
+      setState(() => _errorMessage = 'Invalid code or verification failed.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handlePostLoginRouting() async {
+    if (!mounted) return;
+
     if (widget.appType == 'student') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const StudentDashboard()),
       );
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DriverDashboard()),
-      );
+      String uid = FirebaseAuth.instance.currentUser!.uid;
+      String status = await _authService.checkDriverStatus(uid);
+      
+      if (!mounted) return;
+      
+      if (status == 'new') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DriverRegistrationScreen()),
+        );
+      } else if (status == 'pending') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const PendingVerificationScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DriverDashboard()),
+        );
+      }
     }
   }
 
@@ -84,11 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text(
                 _codeSent ? 'Enter code' : 'Enter your number',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: BoltTheme.darkText,
-                ),
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
               ),
               const SizedBox(height: 8),
               Text(
@@ -124,10 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
               if (_errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(color: Colors.red, fontSize: 14),
-                  ),
+                  child: Text(_errorMessage, style: const TextStyle(color: Colors.red, fontSize: 14)),
                 ),
                 
               const Spacer(),
@@ -138,9 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => EmailSignupScreen(appType: widget.appType),
-                        ),
+                        MaterialPageRoute(builder: (_) => EmailSignupScreen(appType: widget.appType)),
                       );
                     },
                     child: const Text('Or sign up with email', style: TextStyle(color: BoltTheme.primaryGreen)),
@@ -150,8 +199,10 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _codeSent ? _verifySmsCode : _validateAndSendCode,
-                  child: Text(_codeSent ? 'Verify Code' : 'Continue'),
+                  onPressed: _isLoading ? null : (_codeSent ? _verifySmsCode : _validateAndSendCode),
+                  child: _isLoading 
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white))
+                    : Text(_codeSent ? 'Verify Code' : 'Continue'),
                 ),
               ),
             ],

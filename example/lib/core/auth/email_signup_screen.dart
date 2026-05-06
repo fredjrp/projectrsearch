@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../student/student_dashboard.dart';
 import '../../driver/driver_dashboard.dart';
+import '../../driver/driver_registration_screen.dart';
+import '../../driver/pending_verification_screen.dart';
 import '../theme/bolt_theme.dart';
+import '../services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EmailSignupScreen extends StatefulWidget {
   final String appType;
@@ -16,10 +20,12 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final AuthService _authService = AuthService();
   
+  bool _isLoading = false;
   String _errorMessage = '';
 
-  void _validateAndSignup() {
+  Future<void> _validateAndSignup() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text;
     String name = _nameController.text.trim();
@@ -29,13 +35,11 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
       return;
     }
 
-    // Email validation
     if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
       setState(() => _errorMessage = 'Please enter a valid email address');
       return;
     }
 
-    // Password validation (at least 6 characters)
     if (password.length < 6) {
       setState(() => _errorMessage = 'Password must be at least 6 characters long');
       return;
@@ -43,22 +47,56 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
 
     setState(() {
       _errorMessage = '';
+      _isLoading = true;
     });
 
-    // TODO: Integrate actual FirebaseAuth createUserWithEmailAndPassword
-    // Mock success routing
-    if (widget.appType == 'student') {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const StudentDashboard()),
-        (route) => false,
+    try {
+      await _authService.signUpWithEmail(
+        email: email,
+        password: password,
+        name: name,
+        role: widget.appType,
       );
-    } else {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const DriverDashboard()),
-        (route) => false,
-      );
+
+      if (!mounted) return;
+
+      if (widget.appType == 'student') {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const StudentDashboard()),
+          (route) => false,
+        );
+      } else {
+        // Driver flow
+        String uid = FirebaseAuth.instance.currentUser!.uid;
+        String status = await _authService.checkDriverStatus(uid);
+        
+        if (!mounted) return;
+        
+        if (status == 'new') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const DriverRegistrationScreen()),
+            (route) => false,
+          );
+        } else if (status == 'pending') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const PendingVerificationScreen()),
+            (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const DriverDashboard()),
+            (route) => false,
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _errorMessage = e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -79,11 +117,7 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
             children: [
               const Text(
                 'Create account',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: BoltTheme.darkText,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -91,51 +125,35 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
                 style: TextStyle(fontSize: 16, color: BoltTheme.greyText),
               ),
               const SizedBox(height: 32),
-              
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person),
-                ),
+                decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person)),
               ),
               const SizedBox(height: 16),
-              
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email),
-                ),
+                decoration: const InputDecoration(labelText: 'Email Address', prefixIcon: Icon(Icons.email)),
               ),
               const SizedBox(height: 16),
-              
               TextField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: Icon(Icons.lock),
-                ),
+                decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock)),
               ),
-              
               if (_errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(color: Colors.red, fontSize: 14),
-                  ),
+                  child: Text(_errorMessage, style: const TextStyle(color: Colors.red, fontSize: 14)),
                 ),
-                
               const SizedBox(height: 32),
-              
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _validateAndSignup,
-                  child: const Text('Sign Up'),
+                  onPressed: _isLoading ? null : _validateAndSignup,
+                  child: _isLoading 
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white))
+                    : const Text('Sign Up'),
                 ),
               ),
             ],
