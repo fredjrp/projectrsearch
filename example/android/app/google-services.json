@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "805708188196",
+    "project_id": "uberzo",
+    "storage_bucket": "uberzo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805708188196:android:016756c8de3f655b19a6b1",
+        "android_client_info": {
+          "package_name": "com.example.uber_drivers_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "805708188196-1r6qc51mrgr8sj40ho9j0g113j6phcrk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-kXeu9e9rgshR31cDi1rM5nOGKaflkq8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "805708188196-1r6qc51mrgr8sj40ho9j0g113j6phcrk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
