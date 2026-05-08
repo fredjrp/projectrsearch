@@ -27,11 +27,13 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     configurations.all {
+        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-core'
         resolutionStrategy {
             force 'androidx.core:core-ktx:1.10.1'
             force 'androidx.core:core:1.10.1'
             force 'androidx.annotation:annotation-experimental:1.3.0'
-            force 'com.mapbox.mapboxsdk:mapbox-android-core:5.0.0' // Force a stable version
+            // Avoid using very new common versions that conflict with old plugins
+            force 'com.mapbox.common:common:23.6.0' 
         }
     }
     compileSdkVersion 33
