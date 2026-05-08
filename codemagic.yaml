@@ -17,13 +17,15 @@ workflows:
           # We need to set this in the example's android folder
           echo "flutter.sdk=$FLUTTER_ROOT" > example/android/local.properties
 
-      - name: Get dependencies for Root and Example
+      - name: Clean and Get dependencies
         script: |
-          # First, get dependencies for the plugin itself
+          # Clean and get dependencies for the plugin itself
+          flutter clean
           flutter pub get
           
-          # Then, go into the example folder and get dependencies there
+          # Then, go into the example folder and do the same
           cd example
+          flutter clean
           flutter pub get
 
       - name: Build Android APK (Student)

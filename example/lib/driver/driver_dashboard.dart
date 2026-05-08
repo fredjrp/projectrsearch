@@ -34,7 +34,10 @@ class _DriverDashboardState extends State<DriverDashboard> {
   Future<void> _checkPermissions() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
-      setState(() => _hasLocationPermission = true);
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (mounted) {
+        setState(() => _hasLocationPermission = true);
+      }
     }
   }
 

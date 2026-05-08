@@ -42,9 +42,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
     
     if (permission == LocationPermission.deniedForever) return;
 
-    setState(() {
-      _hasLocationPermission = true;
-    });
+    // Small delay to ensure Mapbox engine is fully warmed up
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    if (mounted) {
+      setState(() {
+        _hasLocationPermission = true;
+      });
+    }
   }
 
   void _onMapCreated(gl.MapboxMapController controller) {
