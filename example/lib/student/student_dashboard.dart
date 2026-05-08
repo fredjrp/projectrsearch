@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:mapbox_gl/mapbox_gl.dart' as gl;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 import '../core/theme/bolt_theme.dart';
 import 'profile_screen.dart';
 
@@ -21,6 +22,30 @@ class _StudentDashboardState extends State<StudentDashboard> {
   final PanelController _panelController = PanelController();
   gl.MapboxMapController? _mapController;
   final TextEditingController _searchController = TextEditingController();
+  bool _hasLocationPermission = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+    
+    if (permission == LocationPermission.deniedForever) return;
+
+    setState(() {
+      _hasLocationPermission = true;
+    });
+  }
 
   void _onMapCreated(gl.MapboxMapController controller) {
     _mapController = controller;
@@ -75,8 +100,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     zoom: 14.0,
                   ),
                   onMapCreated: _onMapCreated,
-                  myLocationEnabled: true,
-                  myLocationTrackingMode: gl.MyLocationTrackingMode.Tracking,
+                  myLocationEnabled: _hasLocationPermission,
+                  myLocationTrackingMode: _hasLocationPermission 
+                      ? gl.MyLocationTrackingMode.Tracking 
+                      : gl.MyLocationTrackingMode.None,
                 );
               },
             ),

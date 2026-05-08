@@ -22,7 +22,21 @@ class DriverDashboard extends StatefulWidget {
 
 class _DriverDashboardState extends State<DriverDashboard> {
   bool _isOnline = false;
+  bool _hasLocationPermission = false;
   StreamSubscription<Position>? _positionStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+      setState(() => _hasLocationPermission = true);
+    }
+  }
 
   @override
   void dispose() {
@@ -145,8 +159,10 @@ class _DriverDashboardState extends State<DriverDashboard> {
               target: gl.LatLng(-1.2921, 36.8219),
               zoom: 15.0,
             ),
-            myLocationEnabled: true,
-            myLocationTrackingMode: gl.MyLocationTrackingMode.Tracking,
+            myLocationEnabled: _hasLocationPermission,
+            myLocationTrackingMode: _hasLocationPermission 
+                ? gl.MyLocationTrackingMode.Tracking 
+                : gl.MyLocationTrackingMode.None,
           ),
           
           // Top Bar

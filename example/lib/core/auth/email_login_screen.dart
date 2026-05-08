@@ -1,48 +1,35 @@
 import 'package:flutter/material.dart';
-import 'email_login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../student/student_dashboard.dart';
 import '../../driver/driver_dashboard.dart';
 import '../../driver/driver_registration_screen.dart';
 import '../../driver/pending_verification_screen.dart';
 import '../theme/bolt_theme.dart';
 import '../services/auth_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class EmailSignupScreen extends StatefulWidget {
+class EmailLoginScreen extends StatefulWidget {
   final String appType;
 
-  const EmailSignupScreen({Key? key, required this.appType}) : super(key: key);
+  const EmailLoginScreen({Key? key, required this.appType}) : super(key: key);
 
   @override
-  State<EmailSignupScreen> createState() => _EmailSignupScreenState();
+  State<EmailLoginScreen> createState() => _EmailLoginScreenState();
 }
 
-class _EmailSignupScreenState extends State<EmailSignupScreen> {
+class _EmailLoginScreenState extends State<EmailLoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
   final AuthService _authService = AuthService();
   
   bool _isLoading = false;
   String _errorMessage = '';
 
-  Future<void> _validateAndSignup() async {
+  Future<void> _login() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    String name = _nameController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'All fields are required');
-      return;
-    }
-
-    if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
-      setState(() => _errorMessage = 'Please enter a valid email address');
-      return;
-    }
-
-    if (password.length < 6) {
-      setState(() => _errorMessage = 'Password must be at least 6 characters long');
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Please enter both email and password');
       return;
     }
 
@@ -52,11 +39,9 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
     });
 
     try {
-      await _authService.signUpWithEmail(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
-        name: name,
-        role: widget.appType,
       );
 
       if (!mounted) return;
@@ -95,7 +80,7 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
         }
       }
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      setState(() => _errorMessage = 'Login failed: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -117,20 +102,15 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Create account',
+                'Welcome Back',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
               ),
               const SizedBox(height: 8),
               const Text(
-                'Sign up with your email to get started.',
+                'Login to continue with your account.',
                 style: TextStyle(fontSize: 16, color: BoltTheme.greyText),
               ),
               const SizedBox(height: 32),
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person)),
-              ),
-              const SizedBox(height: 16),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -151,22 +131,10 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _validateAndSignup,
+                  onPressed: _isLoading ? null : _login,
                   child: _isLoading 
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white))
-                    : const Text('Sign Up'),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => EmailLoginScreen(appType: widget.appType)),
-                    );
-                  },
-                  child: const Text('Already have an account? Login', style: TextStyle(color: BoltTheme.primaryGreen)),
+                    : const Text('Login'),
                 ),
               ),
             ],

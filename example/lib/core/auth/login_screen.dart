@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'email_signup_screen.dart';
+import 'email_login_screen.dart';
 import '../../student/student_dashboard.dart';
 import '../../driver/driver_dashboard.dart';
 import '../../driver/driver_registration_screen.dart';
@@ -184,16 +185,31 @@ class _LoginScreenState extends State<LoginScreen> {
               const Spacer(),
               
               if (!_codeSent)
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => EmailSignupScreen(appType: widget.appType)),
-                      );
-                    },
-                    child: const Text('Or sign up with email', style: TextStyle(color: BoltTheme.primaryGreen)),
-                  ),
+                Column(
+                  children: [
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => EmailSignupScreen(appType: widget.appType)),
+                          );
+                        },
+                        child: const Text('Don\'t have an account? Sign up', style: TextStyle(color: BoltTheme.primaryGreen)),
+                      ),
+                    ),
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => EmailLoginScreen(appType: widget.appType)),
+                          );
+                        },
+                        child: const Text('Login with Email', style: TextStyle(color: Colors.grey)),
+                      ),
+                    ),
+                  ],
                 ),
                 
               SizedBox(
