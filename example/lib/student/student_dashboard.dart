@@ -53,20 +53,37 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   void _updateDriverMarkers(List<DocumentSnapshot> drivers) {
     if (_mapController == null) return;
-    _mapController!.clearSymbols();
-    
-    for (var doc in drivers) {
-      var data = doc.data() as Map<String, dynamic>?;
-      if (data != null && data.containsKey('location')) {
-        GeoPoint loc = data['location'];
-        _mapController!.addSymbol(
-          gl.SymbolOptions(
-            geometry: gl.LatLng(loc.latitude, loc.longitude),
-            iconImage: "car-15", // Ensure this icon exists in Mapbox style
-            iconSize: 2.0,
-          ),
-        );
+    try {
+      _mapController!.clearSymbols();
+      
+      for (var doc in drivers) {
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('location')) {
+          final location = data['location'];
+          
+          // Safe extraction of coordinates
+          double? lat, lng;
+          if (location is GeoPoint) {
+            lat = location.latitude;
+            lng = location.longitude;
+          } else if (location is Map) {
+            lat = (location['latitude'] as num?)?.toDouble();
+            lng = (location['longitude'] as num?)?.toDouble();
+          }
+
+          if (lat != null && lng != null) {
+            _mapController!.addSymbol(gl.SymbolOptions(
+              geometry: gl.LatLng(lat, lng),
+              iconImage: "marker-15", // Using a more generic marker
+              iconSize: 1.5,
+              textField: data['name'] ?? 'Driver',
+              textOffset: const Offset(0, 2),
+            )).catchError((e) => debugPrint("Error adding symbol: $e"));
+          }
+        }
       }
+    } catch (e) {
+      debugPrint("Marker update error: $e");
     }
   }
 
