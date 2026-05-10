@@ -23,6 +23,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   gl.MapboxMapController? _mapController;
   final TextEditingController _searchController = TextEditingController();
   bool _hasLocationPermission = false;
+  bool _isMapStyleLoaded = false;
 
   @override
   void initState() {
@@ -57,7 +58,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   void _updateDriverMarkers(List<DocumentSnapshot> drivers) {
-    if (_mapController == null) return;
+    if (_mapController == null || !_isMapStyleLoaded) return;
     try {
       _mapController!.clearSymbols();
       
@@ -122,6 +123,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     zoom: 14.0,
                   ),
                   onMapCreated: _onMapCreated,
+                  onStyleLoadedCallback: () {
+                    if (mounted) {
+                      setState(() {
+                        _isMapStyleLoaded = true;
+                      });
+                    }
+                  },
                   myLocationEnabled: _hasLocationPermission,
                   myLocationTrackingMode: _hasLocationPermission 
                       ? gl.MyLocationTrackingMode.Tracking 

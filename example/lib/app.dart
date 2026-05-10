@@ -64,6 +64,7 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
   Position? _currentPosition;
   bool _isBrowseMode = true;
   gl.MapboxMapController? _glController;
+  bool _isMapStyleLoaded = false;
 
   @override
   void initState() {
@@ -315,6 +316,11 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
     return StreamBuilder<List<Hub>>(
       stream: _firebaseService.streamHubs(_currentPosition),
       builder: (context, snapshot) {
+        if (snapshot.hasData && _isMapStyleLoaded) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _addHubMarkers(snapshot.data!);
+          });
+        }
         return gl.MapboxMap(
           accessToken: MAPBOX_ACCESS_TOKEN,
           initialCameraPosition: gl.CameraPosition(
@@ -326,8 +332,12 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
           ),
           onMapCreated: (controller) {
             _glController = controller;
-            if (snapshot.hasData) {
-              _addHubMarkers(snapshot.data!);
+          },
+          onStyleLoadedCallback: () {
+            if (mounted) {
+              setState(() {
+                _isMapStyleLoaded = true;
+              });
             }
           },
           myLocationEnabled: true,
@@ -338,7 +348,7 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
   }
 
   void _addHubMarkers(List<Hub> hubs) {
-    if (_glController == null) return;
+    if (_glController == null || !_isMapStyleLoaded) return;
     _glController!.clearSymbols();
     for (var hub in hubs) {
       _glController!.addSymbol(

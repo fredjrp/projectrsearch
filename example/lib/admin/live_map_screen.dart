@@ -16,14 +16,14 @@ class LiveMapScreen extends StatefulWidget {
 
 class _LiveMapScreenState extends State<LiveMapScreen> {
   gl.MapboxMapController? _mapController;
+  bool _isMapStyleLoaded = false;
 
   void _onMapCreated(gl.MapboxMapController controller) {
     _mapController = controller;
-    // Simulate active drivers and rides
-    _addMockMarkers();
   }
 
   void _addMockMarkers() {
+    if (_mapController == null || !_isMapStyleLoaded) return;
     // Mock Driver
     _mapController?.addSymbol(
       const gl.SymbolOptions(
@@ -59,6 +59,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
               zoom: 13.0,
             ),
             onMapCreated: _onMapCreated,
+            onStyleLoadedCallback: () {
+              if (mounted) {
+                setState(() {
+                  _isMapStyleLoaded = true;
+                });
+                _addMockMarkers();
+              }
+            },
           ),
           Positioned(
             top: 20,
