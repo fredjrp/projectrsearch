@@ -44,6 +44,7 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
         children: [
           gl.MapboxMap(
             accessToken: const String.fromEnvironment('MAPBOX_ACCESS_TOKEN', defaultValue: 'YOUR_MAPBOX_TOKEN'),
+            styleString: gl.MapboxStyles.MAPBOX_STREETS,
             initialCameraPosition: const gl.CameraPosition(
               target: gl.LatLng(-1.2921, 36.8219),
               zoom: 16.0,

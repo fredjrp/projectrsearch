@@ -118,6 +118,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 }
                 return gl.MapboxMap(
                   accessToken: _MAPBOX_TOKEN,
+                  styleString: gl.MapboxStyles.MAPBOX_STREETS,
                   initialCameraPosition: const gl.CameraPosition(
                     target: gl.LatLng(-1.2921, 36.8219), // Nairobi CBD default
                     zoom: 14.0,

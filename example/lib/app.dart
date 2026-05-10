@@ -323,6 +323,7 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
         }
         return gl.MapboxMap(
           accessToken: MAPBOX_ACCESS_TOKEN,
+          styleString: gl.MapboxStyles.MAPBOX_STREETS,
           initialCameraPosition: gl.CameraPosition(
             target: gl.LatLng(
               _currentPosition?.latitude ?? -1.396,

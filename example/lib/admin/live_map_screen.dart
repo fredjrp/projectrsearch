@@ -54,6 +54,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
         children: [
           gl.MapboxMap(
             accessToken: _MAPBOX_TOKEN,
+            styleString: gl.MapboxStyles.MAPBOX_STREETS,
             initialCameraPosition: const gl.CameraPosition(
               target: gl.LatLng(-1.2921, 36.8219),
               zoom: 13.0,
