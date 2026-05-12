@@ -63,6 +63,7 @@ open class TurnByTurn(
 
     private val mapViewObserver = object : MapViewObserver() {
         override fun onAttached(mapView: MapView) {
+            Log.d("TurnByTurn", "MapView onAttached")
             this@TurnByTurn.mapView = mapView
             if (this@TurnByTurn.initialLatitude != null && this@TurnByTurn.initialLongitude != null) {
                 val point = Point.fromLngLat(this@TurnByTurn.initialLongitude!!, this@TurnByTurn.initialLatitude!!)
@@ -84,6 +85,7 @@ open class TurnByTurn(
     }
 
     open fun initNavigation() {
+        Log.d("TurnByTurn", "initNavigation called")
         this.binding.navigationView.registerMapObserver(mapViewObserver)
         val navigationOptions = NavigationOptions.Builder(this.context)
             .accessToken(this.token)
