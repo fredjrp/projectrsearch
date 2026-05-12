@@ -278,7 +278,7 @@ open class TurnByTurn(
         if (pointAnnotationManager == null) {
             val mv = this.mapView
             if (mv != null) {
-                val annotationApi = mv.getMapboxMap().annotations
+                val annotationApi = mv.annotations
                 pointAnnotationManager = annotationApi.createPointAnnotationManager(mv)
             } else {
                 result.error("MAP_ERROR", "MapView not attached", null)
