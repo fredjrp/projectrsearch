@@ -288,7 +288,7 @@ open class TurnByTurn(
         result.success(true)
     }
 
-    private fun setOptions(arguments: Map<*, *>) {
+    open fun setOptions(arguments: Map<*, *>) {
         val navMode = arguments["mode"] as? String
         if (navMode != null) {
             when (navMode) {
@@ -328,7 +328,7 @@ open class TurnByTurn(
         this@TurnByTurn.binding.navigationView.customizeViewOptions {
             mapStyleUriDay = this@TurnByTurn.mapStyleUrlDay
             mapStyleUriNight = this@TurnByTurn.mapStyleUrlNight
-        }           
+        }
 
         this.initialLatitude = arguments["initialLatitude"] as? Double
         this.initialLongitude = arguments["initialLongitude"] as? Double
@@ -346,6 +346,17 @@ open class TurnByTurn(
         val tt = arguments["tilt"] as? Double
         if (tt != null) {
             this.tilt = tt
+        }
+
+        if (this.initialLatitude != null && this.initialLongitude != null) {
+            this@TurnByTurn.binding.navigationView.customizeViewOptions {
+                initialCameraOptions = com.mapbox.maps.CameraOptions.Builder()
+                    .center(Point.fromLngLat(this@TurnByTurn.initialLongitude!!, this@TurnByTurn.initialLatitude!!))
+                    .zoom(this@TurnByTurn.zoom)
+                    .bearing(this@TurnByTurn.bearing)
+                    .pitch(this@TurnByTurn.tilt)
+                    .build()
+            }
         }
 
         val optim = arguments["isOptimized"] as? Boolean
