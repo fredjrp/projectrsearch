@@ -85,7 +85,16 @@ open class TurnByTurn(
     }
 
     open fun initNavigation() {
-        Log.d("TurnByTurn", "initNavigation called")
+        Log.d("TurnByTurn", "initNavigation called with token: ${this.token?.take(10)}...")
+        
+        if (this.token == null || this.token!!.isEmpty() || this.token == "YOUR_MAPBOX_ACCESS_TOKEN_GOES_HERE") {
+            Log.e("TurnByTurn", "ABORTING: Token is missing or placeholder!")
+            return
+        }
+
+        // Ensure ResourceOptionsManager is initialized with the token
+        com.mapbox.maps.ResourceOptionsManager.getDefault(this.context, this.token!!)
+
         this.binding.navigationView.registerMapObserver(mapViewObserver)
         val navigationOptions = NavigationOptions.Builder(this.context)
             .accessToken(this.token)
@@ -302,6 +311,12 @@ open class TurnByTurn(
     }
 
     open fun setOptions(arguments: Map<*, *>) {
+        this.token = arguments["accessToken"] as? String
+            ?: try {
+                context.getString(context.resources.getIdentifier("mapbox_access_token", "string", context.packageName))
+            } catch (e: Exception) {
+                "pk.eyJ1IjoiZnJlZGp5IiwiYSI6ImNtbmphZ2tiMDBnMjQycnFyNnh0cXF0cmYifQ.eubs9uIGOVmbyfXJakLo9g"
+            }
         val navMode = arguments["mode"] as? String
         if (navMode != null) {
             when (navMode) {

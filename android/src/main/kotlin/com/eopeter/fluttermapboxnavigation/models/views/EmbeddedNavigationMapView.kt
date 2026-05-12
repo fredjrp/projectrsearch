@@ -39,8 +39,8 @@ class EmbeddedNavigationMapView(
 
     open fun initialize() {
         initFlutterChannelHandlers()
-        initNavigation()
         setOptions(this.arguments)
+        initNavigation()
 
         if(!(this.arguments?.get("longPressDestinationEnabled") as Boolean)) {
             this.binding.navigationView.customizeViewOptions {

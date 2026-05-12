@@ -13,6 +13,9 @@ const String _MAPBOX_TOKEN = String.fromEnvironment(
   defaultValue: 'pk.eyJ1IjoiZnJlZGp5IiwiYSI6ImNtbmphZ2tiMDBnMjQycnFyNnh0cXF0cmYifQ.eubs9uIGOVmbyfXJakLo9g'
 );
 
+import '../core/models/ride_model.dart';
+import '../core/services/ride_service.dart';
+
 class DriverDashboard extends StatefulWidget {
   const DriverDashboard({Key? key}) : super(key: key);
 
@@ -24,11 +27,28 @@ class _DriverDashboardState extends State<DriverDashboard> {
   bool _isOnline = false;
   bool _hasLocationPermission = false;
   StreamSubscription<Position>? _positionStream;
+  StreamSubscription<List<Ride>>? _rideSubscription;
+  final RideService _rideService = RideService();
+  double _walletBalance = 0.0;
 
   @override
   void initState() {
     super.initState();
     _checkPermissions();
+    _listenToWallet();
+  }
+
+  void _listenToWallet() {
+    String? uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    FirebaseFirestore.instance.collection('drivers').doc(uid).snapshots().listen((doc) {
+      if (doc.exists) {
+        setState(() {
+          _walletBalance = (doc.data()?['walletBalance'] as num?)?.toDouble() ?? 0.0;
+        });
+      }
+    });
   }
 
   Future<void> _checkPermissions() async {
@@ -44,6 +64,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
   @override
   void dispose() {
     _positionStream?.cancel();
+    _rideSubscription?.cancel();
     _setOfflineInFirestore();
     super.dispose();
   }
@@ -56,10 +77,61 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
     if (_isOnline) {
       _startLocationUpdates();
+      _startRideListener();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You are now online! Listening for rides...")));
     } else {
       _stopLocationUpdates();
+      _rideSubscription?.cancel();
     }
+  }
+
+  void _startRideListener() {
+    _rideSubscription = _rideService.getAvailableRides().listen((rides) {
+      if (rides.isNotEmpty && _isOnline) {
+        _showRideRequestDialog(rides.first);
+      }
+    });
+  }
+
+  void _showRideRequestDialog(Ride ride) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("New Ride Request!"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Pickup: ${ride.pickupAddress}"),
+            const SizedBox(height: 8),
+            Text("Dropoff: ${ride.destinationAddress}"),
+            const SizedBox(height: 8),
+            Text("Est. Earnings: KES ${ride.fare}", style: const TextStyle(fontWeight: FontWeight.bold, color: BoltTheme.primaryGreen)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Decline", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              String? uid = FirebaseAuth.instance.currentUser?.uid;
+              if (uid != null) {
+                await _rideService.acceptRide(ride.id, uid);
+                if (mounted) {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DriverNavigationScreen()));
+                }
+              }
+            },
+            child: const Text("Accept"),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<bool> _handleLocationPermission() async {
@@ -114,43 +186,6 @@ class _DriverDashboardState extends State<DriverDashboard> {
     }
   }
 
-  void _simulateIncomingRide() {
-    if (!_isOnline) return;
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("New Ride Request!"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text("Pickup: Strathmore University"),
-            SizedBox(height: 8),
-            Text("Dropoff: Westlands"),
-            SizedBox(height: 8),
-            Text("Est. Earnings: KES 450", style: TextStyle(fontWeight: FontWeight.bold, color: BoltTheme.primaryGreen)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Decline", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const DriverNavigationScreen()));
-            },
-            child: const Text("Accept"),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -194,15 +229,9 @@ class _DriverDashboardState extends State<DriverDashboard> {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
                   ),
-                  child: const Text("KES 1,250.00", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: Text("KES ${_walletBalance.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
-                FloatingActionButton(
-                  heroTag: "testRideBtn",
-                  mini: true,
-                  backgroundColor: Colors.white,
-                  onPressed: _simulateIncomingRide,
-                  child: const Icon(Icons.notifications_active, color: BoltTheme.primaryGreen),
-                ),
+                const SizedBox(width: 48), // Spacer to balance the layout
               ],
             ),
           ),

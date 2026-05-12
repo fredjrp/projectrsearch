@@ -4,6 +4,9 @@ import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import '../core/theme/bolt_theme.dart';
+import '../core/models/ride_model.dart';
+import '../core/services/payment_service.dart';
+import '../core/services/ride_service.dart';
 import 'profile_screen.dart';
 
 const String _MAPBOX_TOKEN = String.fromEnvironment(
@@ -29,6 +32,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void initState() {
     super.initState();
     _checkPermissions();
+    _seedDemoData();
+  }
+
+  Future<void> _seedDemoData() async {
+    // Check if we've already seeded to avoid duplicates
+    final prefs = await FirebaseFirestore.instance.collection('rides').where('studentId', isEqualTo: 'demo_student_123').get();
+    if (prefs.docs.isEmpty) {
+      await _rideService.seedDemoRides('demo_student_123');
+    }
   }
 
   Future<void> _checkPermissions() async {
@@ -146,58 +158,101 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildPanel(ScrollController sc) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isLargeScreen = constraints.maxWidth > 600;
+        
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: isLargeScreen ? 40.0 : 20.0,
+            vertical: 12.0
           ),
-          const SizedBox(height: 20),
-          const Text(
-            "Where to?",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: BoltTheme.primaryGreen),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: "Search destination",
-                      border: InputBorder.none,
-                      filled: false,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      errorBorder: InputBorder.none,
-                    ),
+          child: ListView(
+            controller: sc,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Where to?",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: BoltTheme.primaryGreen),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          hintText: "Search destination",
+                          border: InputBorder.none,
+                          filled: false,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Promo Banner
+              _buildPromoBanner(),
+              const SizedBox(height: 24),
+              _buildSuggestedDestination(Icons.home, "Home", "123 Moi Avenue"),
+              _buildSuggestedDestination(Icons.work, "University", "Strathmore Uni"),
+              _buildSuggestedDestination(Icons.history, "Recent Location", "Westgate Mall"),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _buildPromoBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [BoltTheme.primaryGreen, BoltTheme.primaryGreen.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Get 20% off", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                Text("On your first EV ride!", style: TextStyle(color: Colors.white70, fontSize: 14)),
               ],
             ),
           ),
-          const SizedBox(height: 24),
-          // Suggested Destinations Mock
-          _buildSuggestedDestination(Icons.home, "Home", "123 Moi Avenue"),
-          _buildSuggestedDestination(Icons.work, "University", "Strathmore Uni"),
-          _buildSuggestedDestination(Icons.history, "Recent Location", "Westgate Mall"),
+          Image.network(
+            "https://cdn-icons-png.flaticon.com/512/3202/3202926.png",
+            height: 50,
+            color: Colors.white,
+          ),
         ],
       ),
     );
@@ -212,76 +267,182 @@ class _StudentDashboardState extends State<StudentDashboard> {
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey)),
-      onTap: () {
-        // Request Ride logic placeholder
-        _showRideOptions();
-      },
+      onTap: () => _showRideOptions(),
     );
   }
+
+  VehicleType _selectedType = VehicleType.bolt;
 
   void _showRideOptions() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: 400,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Choose a ride", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      _buildRideOption("Bolt", "4 min", "KES 350", VehicleType.bolt, setModalState),
+                      _buildRideOption("Bolt EV", "6 min", "KES 320", VehicleType.bolt_ev, setModalState),
+                      _buildRideOption("Boda", "2 min", "KES 150", VehicleType.boda, setModalState),
+                      _buildRideOption("Bolt XL", "8 min", "KES 550", VehicleType.bolt_xl, setModalState),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => _handlePaymentAndBooking(),
+                    child: Text("Confirm ${_selectedType.name.split('_').map((e) => e[0].toUpperCase() + e.substring(1)).join(' ')}"),
+                  ),
+                )
+              ],
+            ),
+          );
+        }
+      ),
+    );
+  }
+
+  Widget _buildRideOption(String name, String eta, String price, VehicleType type, StateSetter setModalState) {
+    bool selected = _selectedType == type;
+    return GestureDetector(
+      onTap: () => setModalState(() => _selectedType = type),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected ? BoltTheme.primaryGreen.withOpacity(0.1) : Colors.white,
+          border: Border.all(color: selected ? BoltTheme.primaryGreen : Colors.grey[300]!, width: 2),
+          borderRadius: BorderRadius.circular(16),
         ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Choose a ride", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            _buildRideOption("Bolt", "4 min", "KES 350", true),
-            _buildRideOption("Boda", "2 min", "KES 150", false),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close sheet
-                  // TODO: Navigate to Active Ride Screen
-                },
-                child: const Text("Confirm Bolt"),
-              ),
-            )
+            Row(
+              children: [
+                Icon(
+                  type == VehicleType.boda ? Icons.motorcycle : 
+                  type == VehicleType.bolt_ev ? Icons.electric_car :
+                  type == VehicleType.bolt_xl ? Icons.airport_shuttle : Icons.local_taxi, 
+                  color: BoltTheme.primaryGreen, 
+                  size: 32
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                    Text(eta, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  ],
+                ),
+              ],
+            ),
+            Text(price, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRideOption(String name, String eta, String price, bool selected) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: selected ? BoltTheme.primaryGreen.withOpacity(0.1) : Colors.white,
-        border: Border.all(color: selected ? BoltTheme.primaryGreen : Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(name == "Boda" ? Icons.motorcycle : Icons.local_taxi, color: BoltTheme.primaryGreen, size: 30),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(eta, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                ],
-              ),
-            ],
-          ),
-          Text(price, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        ],
+  final PaymentService _paymentService = PaymentService();
+  final RideService _rideService = RideService();
+
+  void _handlePaymentAndBooking() async {
+    Navigator.pop(context); // Close selection sheet
+    
+    // For demo, we'll use a hardcoded phone number or ask the user
+    // In a real app, this would come from the user's profile
+    String phoneNumber = "0712345678"; 
+    double amount = _selectedType == VehicleType.boda ? 150.0 : 350.0;
+
+    _showPaymentLoading();
+
+    final result = await _paymentService.initiateStkPush(
+      phoneNumber: phoneNumber,
+      amount: amount,
+      callbackUrl: "https://your-render-callback-url.com/mpesa/callback",
+    );
+
+    if (result["success"]) {
+      // Simulate waiting for user to enter PIN
+      final paid = await _paymentService.simulatePaymentVerification(result["checkoutRequestId"]);
+      
+      if (paid && mounted) {
+        Navigator.pop(context); // Close loading dialog
+        _createNewRide();
+      }
+    } else {
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result["message"]), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _createNewRide() async {
+    final ride = Ride(
+      id: '',
+      studentId: "demo_student_123", // Replace with actual user ID
+      pickupAddress: "Current Location",
+      destinationAddress: _searchController.text.isNotEmpty ? _searchController.text : "University",
+      pickupLocation: const GeoPoint(-1.2921, 36.8219), // Replace with actual location
+      destinationLocation: const GeoPoint(-1.3090, 36.8126), // Replace with actual destination
+      fare: _selectedType == VehicleType.boda ? 150.0 : 350.0,
+      status: RideStatus.searching,
+      vehicleType: _selectedType,
+      timestamp: DateTime.now(),
+    );
+
+    try {
+      final rideId = await _rideService.createRide(ride);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Ride booked successfully! Searching for riders..."), backgroundColor: BoltTheme.primaryGreen),
+        );
+        // TODO: Navigate to Active Ride Screen
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error creating ride: $e"), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  void _showPaymentLoading() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: BoltTheme.primaryGreen),
+            const SizedBox(height: 24),
+            const Text("Waiting for M-Pesa Prompt...", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text("Check your phone to complete payment", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+          ],
+        ),
       ),
     );
   }
