@@ -27,14 +27,15 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     configurations.all {
-        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-core'
         resolutionStrategy {
             force 'androidx.core:core-ktx:1.10.1'
             force 'androidx.core:core:1.10.1'
             force 'androidx.annotation:annotation-experimental:1.3.0'
             
-            // Fix telemetry conflict
+            // Unify telemetry and common versions to prevent runtime crashes
+            // while allowing both v9 and v10 plugins to share resources
             force 'com.mapbox.mapboxsdk:mapbox-android-telemetry:8.1.0'
+            force 'com.mapbox.mapboxsdk:mapbox-android-core:3.1.0'
         }
     }
     compileSdkVersion 33
@@ -62,6 +63,7 @@ android {
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
     }
 
     buildTypes {

@@ -111,7 +111,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   .where('isOnline', isEqualTo: true)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
+                if (snapshot.hasData && _mapController != null && _isMapStyleLoaded) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _updateDriverMarkers(snapshot.data!.docs);
                   });
