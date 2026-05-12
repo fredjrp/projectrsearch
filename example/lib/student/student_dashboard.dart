@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:mapbox_gl/mapbox_gl.dart' as gl;
+import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import '../core/theme/bolt_theme.dart';
@@ -19,8 +19,8 @@ class StudentDashboard extends StatefulWidget {
 }
 
 class _StudentDashboardState extends State<StudentDashboard> {
+  MapBoxNavigationViewController? _mapController;
   final PanelController _panelController = PanelController();
-  gl.MapboxMapController? _mapController;
   final TextEditingController _searchController = TextEditingController();
   bool _hasLocationPermission = false;
   bool _isMapStyleLoaded = false;
@@ -53,43 +53,33 @@ class _StudentDashboardState extends State<StudentDashboard> {
     }
   }
 
-  void _onMapCreated(gl.MapboxMapController controller) {
-    _mapController = controller;
-  }
-
   void _updateDriverMarkers(List<DocumentSnapshot> drivers) {
     if (_mapController == null || !_isMapStyleLoaded) return;
-    try {
-      _mapController!.clearSymbols();
-      
-      for (var doc in drivers) {
-        final data = doc.data() as Map<String, dynamic>?;
-        if (data != null && data.containsKey('location')) {
-          final location = data['location'];
-          
-          // Safe extraction of coordinates
-          double? lat, lng;
-          if (location is GeoPoint) {
-            lat = location.latitude;
-            lng = location.longitude;
-          } else if (location is Map) {
-            lat = (location['latitude'] as num?)?.toDouble();
-            lng = (location['longitude'] as num?)?.toDouble();
-          }
+    
+    _mapController!.clearMarkers();
+    
+    for (var doc in drivers) {
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data != null && data.containsKey('location')) {
+        final location = data['location'];
+        
+        // Safe extraction of coordinates
+        double? lat, lng;
+        if (location is GeoPoint) {
+          lat = location.latitude;
+          lng = location.longitude;
+        } else if (location is Map) {
+          lat = (location['latitude'] as num?)?.toDouble();
+          lng = (location['longitude'] as num?)?.toDouble();
+        }
 
-          if (lat != null && lng != null) {
-            _mapController!.addSymbol(gl.SymbolOptions(
-              geometry: gl.LatLng(lat, lng),
-              iconImage: "marker-15", // Using a more generic marker
-              iconSize: 1.5,
-              textField: data['name'] ?? 'Driver',
-              textOffset: const Offset(0, 2),
-            )).catchError((e) => debugPrint("Error adding symbol: $e"));
-          }
+        if (lat != null && lng != null) {
+          _mapController!.addMarker(
+            latitude: lat,
+            longitude: lng,
+          );
         }
       }
-    } catch (e) {
-      debugPrint("Marker update error: $e");
     }
   }
 
@@ -116,25 +106,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     _updateDriverMarkers(snapshot.data!.docs);
                   });
                 }
-                return gl.MapboxMap(
-                  accessToken: _MAPBOX_TOKEN,
-                  styleString: gl.MapboxStyles.MAPBOX_STREETS,
-                  initialCameraPosition: const gl.CameraPosition(
-                    target: gl.LatLng(-1.2921, 36.8219), // Nairobi CBD default
-                    zoom: 14.0,
+                return MapBoxNavigationView(
+                  options: MapBoxOptions(
+                    initialLatitude: -1.2921,
+                    initialLongitude: 36.8219,
+                    zoom: 15.0,
+                    language: "en",
                   ),
-                  onMapCreated: _onMapCreated,
-                  onStyleLoadedCallback: () {
-                    if (mounted) {
-                      setState(() {
-                        _isMapStyleLoaded = true;
-                      });
-                    }
+                  onCreated: (controller) {
+                    _mapController = controller;
+                    _mapController!.initialize();
+                    setState(() {
+                      _isMapStyleLoaded = true;
+                    });
                   },
-                  myLocationEnabled: _hasLocationPermission,
-                  myLocationTrackingMode: _hasLocationPermission 
-                      ? gl.MyLocationTrackingMode.Tracking 
-                      : gl.MyLocationTrackingMode.None,
                 );
               },
             ),

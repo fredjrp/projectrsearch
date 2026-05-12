@@ -33,6 +33,10 @@ import com.mapbox.navigation.core.arrival.ArrivalObserver
 import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
 import com.mapbox.navigation.core.trip.session.*
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -95,6 +99,12 @@ open class TurnByTurn(
             }
             "getDurationRemaining" -> {
                 result.success(this.durationRemaining)
+            }
+            "addMarker" -> {
+                this.addMarker(methodCall, result)
+            }
+            "clearMarkers" -> {
+                this.clearMarkers(result)
             }
             else -> result.notImplemented()
         }
@@ -221,6 +231,40 @@ open class TurnByTurn(
         MapboxNavigationApp.current()!!.stopTripSession()
         this.isNavigationCanceled = true
         PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
+    }
+
+    private var pointAnnotationManager: PointAnnotationManager? = null
+
+    private fun addMarker(methodCall: MethodCall, result: MethodChannel.Result) {
+        val arguments = methodCall.arguments as? Map<*, *>
+        if (arguments == null) {
+            result.error("ARGUMENT_ERROR", "Arguments missing", null)
+            return
+        }
+
+        val latitude = arguments["latitude"] as? Double
+        val longitude = arguments["longitude"] as? Double
+        if (latitude == null || longitude == null) {
+            result.error("ARGUMENT_ERROR", "Latitude or Longitude missing", null)
+            return
+        }
+
+        if (pointAnnotationManager == null) {
+            val annotationApi = binding.navigationView.getMapboxMap().annotations
+            pointAnnotationManager = annotationApi.createPointAnnotationManager(binding.navigationView)
+        }
+
+        val point = Point.fromLngLat(longitude, latitude)
+        val pointAnnotationOptions = PointAnnotationOptions()
+            .withPoint(point)
+            
+        pointAnnotationManager?.create(pointAnnotationOptions)
+        result.success(true)
+    }
+
+    private fun clearMarkers(result: MethodChannel.Result) {
+        pointAnnotationManager?.deleteAll()
+        result.success(true)
     }
 
     private fun setOptions(arguments: Map<*, *>) {

@@ -126,6 +126,22 @@ class MapBoxNavigationViewController {
     return success as bool?;
   }
 
+  /// Adds a marker to the map
+  Future<bool?> addMarker({
+    required double latitude,
+    required double longitude,
+  }) async {
+    return _methodChannel.invokeMethod('addMarker', {
+      'latitude': latitude,
+      'longitude': longitude,
+    });
+  }
+
+  /// Clears all markers from the map
+  Future<bool?> clearMarkers() async {
+    return _methodChannel.invokeMethod('clearMarkers', null);
+  }
+
   /// Generic Handler for Messages sent from the Platform
   Future<dynamic> _handleMethod(MethodCall call) async {
     switch (call.method) {

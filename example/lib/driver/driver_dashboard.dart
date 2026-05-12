@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mapbox_gl/mapbox_gl.dart' as gl;
+import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -156,17 +156,16 @@ class _DriverDashboardState extends State<DriverDashboard> {
     return Scaffold(
       body: Stack(
         children: [
-          gl.MapboxMap(
-            accessToken: _MAPBOX_TOKEN,
-            styleString: gl.MapboxStyles.MAPBOX_STREETS,
-            initialCameraPosition: const gl.CameraPosition(
-              target: gl.LatLng(-1.2921, 36.8219),
+          MapBoxNavigationView(
+            options: MapBoxOptions(
+              initialLatitude: -1.2921,
+              initialLongitude: 36.8219,
               zoom: 15.0,
+              language: "en",
             ),
-            myLocationEnabled: _hasLocationPermission,
-            myLocationTrackingMode: _hasLocationPermission 
-                ? gl.MyLocationTrackingMode.Tracking 
-                : gl.MyLocationTrackingMode.None,
+            onCreated: (controller) {
+              controller.initialize();
+            },
           ),
           
           // Top Bar

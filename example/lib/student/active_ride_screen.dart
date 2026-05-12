@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mapbox_gl/mapbox_gl.dart' as gl;
+import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import '../core/theme/bolt_theme.dart';
 
 class ActiveRideScreen extends StatefulWidget {
@@ -42,15 +42,16 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          gl.MapboxMap(
-            accessToken: const String.fromEnvironment('MAPBOX_ACCESS_TOKEN', defaultValue: 'YOUR_MAPBOX_TOKEN'),
-            styleString: gl.MapboxStyles.MAPBOX_STREETS,
-            initialCameraPosition: const gl.CameraPosition(
-              target: gl.LatLng(-1.2921, 36.8219),
+          MapBoxNavigationView(
+            options: MapBoxOptions(
+              initialLatitude: -1.2921,
+              initialLongitude: 36.8219,
               zoom: 16.0,
+              language: "en",
             ),
-            myLocationEnabled: true,
-            myLocationTrackingMode: gl.MyLocationTrackingMode.Tracking,
+            onCreated: (controller) {
+              controller.initialize();
+            },
           ),
           
           // SOS Button

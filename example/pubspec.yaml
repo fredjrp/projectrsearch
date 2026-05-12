@@ -33,7 +33,6 @@ dependencies:
   firebase_core: 2.14.0
   cloud_firestore: 4.8.0
   geolocator: 9.0.2
-  mapbox_gl: 0.16.0
   fl_chart: 0.65.0
   firebase_auth: 4.6.0
   shared_preferences: 2.1.0

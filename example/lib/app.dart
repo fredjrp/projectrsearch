@@ -7,7 +7,7 @@ import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'package:mapbox_gl/mapbox_gl.dart' as gl;
+import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import 'location_product_page.dart';
 import 'cart_list_page.dart';
 import 'services/firebase_service.dart';
@@ -63,7 +63,7 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
   final FirebaseService _firebaseService = FirebaseService();
   Position? _currentPosition;
   bool _isBrowseMode = true;
-  gl.MapboxMapController? _glController;
+  MapBoxNavigationViewController? _glController;
   bool _isMapStyleLoaded = false;
 
   @override
@@ -321,28 +321,20 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
             _addHubMarkers(snapshot.data!);
           });
         }
-        return gl.MapboxMap(
-          accessToken: MAPBOX_ACCESS_TOKEN,
-          styleString: gl.MapboxStyles.MAPBOX_STREETS,
-          initialCameraPosition: gl.CameraPosition(
-            target: gl.LatLng(
-              _currentPosition?.latitude ?? -1.396,
-              _currentPosition?.longitude ?? 36.762,
-            ),
+        return MapBoxNavigationView(
+          options: MapBoxOptions(
+            initialLatitude: _currentPosition?.latitude ?? -1.396,
+            initialLongitude: _currentPosition?.longitude ?? 36.762,
             zoom: 12.0,
+            language: "en",
           ),
-          onMapCreated: (controller) {
+          onCreated: (controller) {
             _glController = controller;
+            _glController!.initialize();
+            setState(() {
+              _isMapStyleLoaded = true;
+            });
           },
-          onStyleLoadedCallback: () {
-            if (mounted) {
-              setState(() {
-                _isMapStyleLoaded = true;
-              });
-            }
-          },
-          myLocationEnabled: true,
-          myLocationTrackingMode: gl.MyLocationTrackingMode.Tracking,
         );
       },
     );
@@ -350,15 +342,11 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
 
   void _addHubMarkers(List<Hub> hubs) {
     if (_glController == null || !_isMapStyleLoaded) return;
-    _glController!.clearSymbols();
+    _glController!.clearMarkers();
     for (var hub in hubs) {
-      _glController!.addSymbol(
-        gl.SymbolOptions(
-          geometry: gl.LatLng(hub.latitude, hub.longitude),
-          iconImage: "marker-15", // Default mapbox icon
-          textField: hub.name,
-          textOffset: const Offset(0, 2),
-        ),
+      _glController!.addMarker(
+        latitude: hub.latitude,
+        longitude: hub.longitude,
       );
     }
   }

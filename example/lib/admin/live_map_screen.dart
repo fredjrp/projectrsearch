@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mapbox_gl/mapbox_gl.dart' as gl;
+import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import '../core/theme/bolt_theme.dart';
 
 const String _MAPBOX_TOKEN = String.fromEnvironment(
@@ -15,7 +15,7 @@ class LiveMapScreen extends StatefulWidget {
 }
 
 class _LiveMapScreenState extends State<LiveMapScreen> {
-  gl.MapboxMapController? _mapController;
+  MapBoxNavigationViewController? _mapController;
   bool _isMapStyleLoaded = false;
 
   void _onMapCreated(gl.MapboxMapController controller) {
@@ -25,20 +25,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
   void _addMockMarkers() {
     if (_mapController == null || !_isMapStyleLoaded) return;
     // Mock Driver
-    _mapController?.addSymbol(
-      const gl.SymbolOptions(
-        geometry: gl.LatLng(-1.2921, 36.8219),
-        iconImage: "car-15",
-        iconSize: 2.0,
-      ),
+    _mapController?.addMarker(
+      latitude: -1.2921,
+      longitude: 36.8219,
     );
     // Mock Active Ride
-    _mapController?.addSymbol(
-      const gl.SymbolOptions(
-        geometry: gl.LatLng(-1.3000, 36.8100),
-        iconImage: "marker-15",
-        iconColor: "#0000FF", // Blue for ride
-      ),
+    _mapController?.addMarker(
+      latitude: -1.3000,
+      longitude: 36.8100,
     );
   }
 
@@ -52,15 +46,16 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
       ),
       body: Stack(
         children: [
-          gl.MapboxMap(
-            accessToken: _MAPBOX_TOKEN,
-            styleString: gl.MapboxStyles.MAPBOX_STREETS,
-            initialCameraPosition: const gl.CameraPosition(
-              target: gl.LatLng(-1.2921, 36.8219),
+          MapBoxNavigationView(
+            options: MapBoxOptions(
+              initialLatitude: -1.2921,
+              initialLongitude: 36.8219,
               zoom: 13.0,
+              language: "en",
             ),
-            onMapCreated: _onMapCreated,
-            onStyleLoadedCallback: () {
+            onCreated: (controller) {
+              _mapController = controller;
+              _mapController!.initialize();
               if (mounted) {
                 setState(() {
                   _isMapStyleLoaded = true;
