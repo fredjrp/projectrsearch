@@ -24,6 +24,7 @@ import com.mapbox.geojson.Point
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
 import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.dropin.map.MapViewObserver
 import com.mapbox.navigation.base.route.NavigationRoute
 import com.mapbox.navigation.base.route.NavigationRouterCallback
 import com.mapbox.navigation.base.route.RouterFailure
@@ -57,7 +58,22 @@ open class TurnByTurn(
         this.eventChannel?.setStreamHandler(this)
     }
 
+    private var pointAnnotationManager: PointAnnotationManager? = null
+    private var mapView: MapView? = null
+
+    private val mapViewObserver = object : MapViewObserver() {
+        override fun onAttached(mapView: MapView) {
+            this@TurnByTurn.mapView = mapView
+        }
+
+        override fun onDetached(mapView: MapView) {
+            this@TurnByTurn.mapView = null
+            this@TurnByTurn.pointAnnotationManager = null
+        }
+    }
+
     open fun initNavigation() {
+        this.binding.navigationView.registerMapObserver(mapViewObserver)
         val navigationOptions = NavigationOptions.Builder(this.context)
             .accessToken(this.token)
             .build()
@@ -234,8 +250,6 @@ open class TurnByTurn(
         PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
     }
 
-    private var pointAnnotationManager: PointAnnotationManager? = null
-
     private fun addMarker(methodCall: MethodCall, result: MethodChannel.Result) {
         val arguments = methodCall.arguments as? Map<*, *>
         if (arguments == null) {
@@ -251,9 +265,14 @@ open class TurnByTurn(
         }
 
         if (pointAnnotationManager == null) {
-            val mapView = binding.navigationView.findViewById<com.mapbox.maps.MapView>(com.mapbox.navigation.dropin.R.id.mapView)
-            val annotationApi = mapView.mapboxMap.annotations
-            pointAnnotationManager = annotationApi.createPointAnnotationManager(mapView)
+            val mv = this.mapView
+            if (mv != null) {
+                val annotationApi = mv.annotations
+                pointAnnotationManager = annotationApi.createPointAnnotationManager(mv)
+            } else {
+                result.error("MAP_ERROR", "MapView not attached", null)
+                return
+            }
         }
 
         val point = Point.fromLngLat(longitude, latitude)
