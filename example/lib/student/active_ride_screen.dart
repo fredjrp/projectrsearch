@@ -48,6 +48,8 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
               initialLongitude: 36.8219,
               zoom: 16.0,
               language: "en",
+              mapStyleUrlDay: "mapbox://styles/mapbox/streets-v11",
+              mapStyleUrlNight: "mapbox://styles/mapbox/dark-v10",
             ),
             onCreated: (controller) {
               controller.initialize();

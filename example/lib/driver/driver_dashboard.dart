@@ -162,6 +162,8 @@ class _DriverDashboardState extends State<DriverDashboard> {
               initialLongitude: 36.8219,
               zoom: 15.0,
               language: "en",
+              mapStyleUrlDay: "mapbox://styles/mapbox/streets-v11",
+              mapStyleUrlNight: "mapbox://styles/mapbox/dark-v10",
             ),
             onCreated: (controller) {
               controller.initialize();

@@ -327,6 +327,8 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
             initialLongitude: _currentPosition?.longitude ?? 36.762,
             zoom: 12.0,
             language: "en",
+            mapStyleUrlDay: "mapbox://styles/mapbox/streets-v11",
+            mapStyleUrlNight: "mapbox://styles/mapbox/dark-v10",
           ),
           onCreated: (controller) {
             _glController = controller;

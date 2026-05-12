@@ -52,6 +52,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
               initialLongitude: 36.8219,
               zoom: 13.0,
               language: "en",
+              mapStyleUrlDay: "mapbox://styles/mapbox/streets-v11",
+              mapStyleUrlNight: "mapbox://styles/mapbox/dark-v10",
             ),
             onCreated: (controller) {
               _mapController = controller;

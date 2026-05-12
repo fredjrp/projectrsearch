@@ -112,6 +112,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     initialLongitude: 36.8219,
                     zoom: 15.0,
                     language: "en",
+                    mapStyleUrlDay: "mapbox://styles/mapbox/streets-v11",
+                    mapStyleUrlNight: "mapbox://styles/mapbox/dark-v10",
                   ),
                   onCreated: (controller) {
                     _mapController = controller;
