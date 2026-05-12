@@ -64,6 +64,17 @@ open class TurnByTurn(
     private val mapViewObserver = object : MapViewObserver() {
         override fun onAttached(mapView: MapView) {
             this@TurnByTurn.mapView = mapView
+            if (this@TurnByTurn.initialLatitude != null && this@TurnByTurn.initialLongitude != null) {
+                val point = Point.fromLngLat(this@TurnByTurn.initialLongitude!!, this@TurnByTurn.initialLatitude!!)
+                mapView.getMapboxMap().setCamera(
+                    com.mapbox.maps.CameraOptions.Builder()
+                        .center(point)
+                        .zoom(this@TurnByTurn.zoom)
+                        .bearing(this@TurnByTurn.bearing)
+                        .pitch(this@TurnByTurn.tilt)
+                        .build()
+                )
+            }
         }
 
         override fun onDetached(mapView: MapView) {
@@ -267,7 +278,7 @@ open class TurnByTurn(
         if (pointAnnotationManager == null) {
             val mv = this.mapView
             if (mv != null) {
-                val annotationApi = mv.annotations
+                val annotationApi = mv.getMapboxMap().annotations
                 pointAnnotationManager = annotationApi.createPointAnnotationManager(mv)
             } else {
                 result.error("MAP_ERROR", "MapView not attached", null)
@@ -349,14 +360,7 @@ open class TurnByTurn(
         }
 
         if (this.initialLatitude != null && this.initialLongitude != null) {
-            this@TurnByTurn.binding.navigationView.customizeViewOptions {
-                initialCameraOptions = com.mapbox.maps.CameraOptions.Builder()
-                    .center(Point.fromLngLat(this@TurnByTurn.initialLongitude!!, this@TurnByTurn.initialLatitude!!))
-                    .zoom(this@TurnByTurn.zoom)
-                    .bearing(this@TurnByTurn.bearing)
-                    .pitch(this@TurnByTurn.tilt)
-                    .build()
-            }
+            // Camera will be set in MapViewObserver when map is attached
         }
 
         val optim = arguments["isOptimized"] as? Boolean
