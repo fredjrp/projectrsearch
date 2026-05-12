@@ -17,6 +17,7 @@ import com.eopeter.fluttermapboxnavigation.utilities.CustomInfoPanelEndNavButton
 import com.eopeter.fluttermapboxnavigation.utilities.PluginUtilities
 import com.google.gson.Gson
 import com.mapbox.maps.Style
+import com.mapbox.maps.MapView
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Point
@@ -250,8 +251,9 @@ open class TurnByTurn(
         }
 
         if (pointAnnotationManager == null) {
-            val annotationApi = binding.navigationView.getMapboxMap().annotations
-            pointAnnotationManager = annotationApi.createPointAnnotationManager(binding.navigationView)
+            val mapView = binding.navigationView.findViewById<com.mapbox.maps.MapView>(com.mapbox.navigation.dropin.R.id.mapView)
+            val annotationApi = mapView.mapboxMap.annotations
+            pointAnnotationManager = annotationApi.createPointAnnotationManager(mapView)
         }
 
         val point = Point.fromLngLat(longitude, latitude)
