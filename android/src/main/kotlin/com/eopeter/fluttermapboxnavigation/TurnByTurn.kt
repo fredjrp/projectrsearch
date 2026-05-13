@@ -449,7 +449,7 @@ open class TurnByTurn(
 
     private val context: Context = ctx
     val activity: Activity = act
-    private val token: String = accessToken
+    private var token: String? = accessToken
     open var methodChannel: MethodChannel? = null
     open var eventChannel: EventChannel? = null
     private var lastLocation: Location? = null
