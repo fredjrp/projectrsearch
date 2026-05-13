@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/theme/bolt_theme.dart';
 import 'live_map_screen.dart';
 import 'sos_management_screen.dart';

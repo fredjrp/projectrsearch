@@ -18,7 +18,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
   MapBoxNavigationViewController? _mapController;
   bool _isMapStyleLoaded = false;
 
-  void _onMapCreated(gl.MapboxMapController controller) {
+  void _onMapCreated(MapBoxNavigationViewController controller) {
     _mapController = controller;
   }
 
