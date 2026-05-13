@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/bolt_theme.dart';
 import 'admin/admin_login.dart';
 import 'core/widgets/skeleton_loading.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +23,9 @@ class _AdminAppState extends State<AdminApp> {
 
   void initializeFlutterFire() async {
     try {
-      // Note: On Windows/Desktop, you might need to provide FirebaseOptions here.
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       setState(() {
         _initialized = true;
       });
