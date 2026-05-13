@@ -94,11 +94,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
             children: [
               Expanded(child: _buildStatCard("Total Revenue", "KES 4.2M", Icons.attach_money)),
               const SizedBox(width: 24),
-              Expanded(child: _buildStatCard("Active Rides", "142", Icons.local_taxi)),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('active_rides').snapshots(),
+                builder: (context, snapshot) {
+                  final count = snapshot.hasData ? snapshot.data!.docs.length.toString() : "...";
+                  return Expanded(child: _buildStatCard("Active Rides", count, Icons.local_taxi));
+                },
+              ),
               const SizedBox(width: 24),
-              Expanded(child: _buildStatCard("Total Users", "8,432", Icons.people)),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('users').snapshots(),
+                builder: (context, snapshot) {
+                  final count = snapshot.hasData ? snapshot.data!.docs.length.toString() : "...";
+                  return Expanded(child: _buildStatCard("Total Users", count, Icons.people));
+                },
+              ),
               const SizedBox(width: 24),
-              Expanded(child: _buildStatCard("SOS Alerts", "0", Icons.warning, isAlert: false)),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('sos_alerts').where('status', isEqualTo: 'active').snapshots(),
+                builder: (context, snapshot) {
+                  final count = snapshot.hasData ? snapshot.data!.docs.length.toString() : "0";
+                  final isAlert = snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+                  return Expanded(child: _buildStatCard("SOS Alerts", count, Icons.warning, isAlert: isAlert));
+                },
+              ),
             ],
           ),
           const SizedBox(height: 40),

@@ -29,12 +29,14 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyB-kXeu9e9rgshR31cDi1rM5nOGKaflkq8',
-    appId: '1:805708188196:web:600c8702c19e596b19a6b1', // Placeholder for web ID
+    apiKey: 'AIzaSyAk9DOEc_hmyeAJEob8QBAyQkiZCp_CPuI',
+    appId: '1:805708188196:web:5e2468013a04774e19a6b1',
     messagingSenderId: '805708188196',
     projectId: 'uberzo',
     authDomain: 'uberzo.firebaseapp.com',
+    databaseURL: 'https://uberzo-default-rtdb.firebaseio.com',
     storageBucket: 'uberzo.firebasestorage.app',
+    measurementId: 'G-YHNT6CC1NN',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -64,11 +66,13 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyB-kXeu9e9rgshR31cDi1rM5nOGKaflkq8',
-    appId: '1:805708188196:web:600c8702c19e596b19a6b1', // Use web ID for Windows
+    apiKey: 'AIzaSyAk9DOEc_hmyeAJEob8QBAyQkiZCp_CPuI',
+    appId: '1:805708188196:web:5e2468013a04774e19a6b1',
     messagingSenderId: '805708188196',
     projectId: 'uberzo',
     authDomain: 'uberzo.firebaseapp.com',
+    databaseURL: 'https://uberzo-default-rtdb.firebaseio.com',
     storageBucket: 'uberzo.firebasestorage.app',
+    measurementId: 'G-YHNT6CC1NN',
   );
 }
