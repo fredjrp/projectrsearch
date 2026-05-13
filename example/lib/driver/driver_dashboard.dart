@@ -8,13 +8,13 @@ import '../core/theme/bolt_theme.dart';
 import 'profile_screen.dart';
 import 'driver_navigation_screen.dart';
 
+import '../core/models/ride_model.dart';
+import '../core/services/ride_service.dart';
+
 const String _MAPBOX_TOKEN = String.fromEnvironment(
   'MAPBOX_ACCESS_TOKEN',
   defaultValue: 'pk.eyJ1IjoiZnJlZGp5IiwiYSI6ImNtbmphZ2tiMDBnMjQycnFyNnh0cXF0cmYifQ.eubs9uIGOVmbyfXJakLo9g'
 );
-
-import '../core/models/ride_model.dart';
-import '../core/services/ride_service.dart';
 
 class DriverDashboard extends StatefulWidget {
   const DriverDashboard({Key? key}) : super(key: key);

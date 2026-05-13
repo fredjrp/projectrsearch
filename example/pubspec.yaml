@@ -102,3 +102,5 @@ flutter:
 dependency_overrides:
   shared_preferences_android: 2.1.4
   geolocator_android: 4.1.8
+  image_picker_android: 0.8.6+15
+  flutter_plugin_android_lifecycle: 2.0.17
