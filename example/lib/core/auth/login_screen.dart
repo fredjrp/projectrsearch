@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'email_signup_screen.dart';
 import 'email_login_screen.dart';
 import '../../student/student_dashboard.dart';
+import '../../student/student_registration_screen.dart';
 import '../../driver/driver_dashboard.dart';
 import '../../driver/driver_registration_screen.dart';
 import '../../driver/pending_verification_screen.dart';
@@ -97,10 +98,22 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (widget.appType == 'student') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const StudentDashboard()),
-      );
+      String uid = FirebaseAuth.instance.currentUser!.uid;
+      bool isProfileComplete = await _authService.isStudentProfileComplete(uid);
+      
+      if (!mounted) return;
+      
+      if (isProfileComplete) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const StudentDashboard()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const StudentRegistrationScreen()),
+        );
+      }
     } else {
       String uid = FirebaseAuth.instance.currentUser!.uid;
       String status = await _authService.checkDriverStatus(uid);

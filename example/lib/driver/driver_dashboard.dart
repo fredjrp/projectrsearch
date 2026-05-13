@@ -109,6 +109,28 @@ class _DriverDashboardState extends State<DriverDashboard> {
             Text("Dropoff: ${ride.destinationAddress}"),
             const SizedBox(height: 8),
             Text("Est. Earnings: KES ${ride.fare}", style: const TextStyle(fontWeight: FontWeight.bold, color: BoltTheme.primaryGreen)),
+            const Divider(height: 24),
+            FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance.collection('users').doc(ride.studentId).get(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const LinearProgressIndicator();
+                final studentData = snapshot.data!.data() as Map<String, dynamic>?;
+                final studentName = studentData?['name'] ?? 'Student';
+                final studentPhoto = studentData?['profileImage'] ?? '';
+                
+                return Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: studentPhoto.isNotEmpty ? NetworkImage(studentPhoto) : null,
+                      child: studentPhoto.isEmpty ? const Icon(Icons.person) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                );
+              },
+            ),
           ],
         ),
         actions: [

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class AuthService {
   FirebaseAuth get _auth => FirebaseAuth.instance;
@@ -107,7 +109,7 @@ class AuthService {
     required String vehicleMake,
     required String licensePlate,
     required String phone,
-    required String licensePhotoPath, // Placeholder path for now
+    required String licensePhotoPath, // This should be a URL now
   }) async {
     await _firestore.collection('drivers').doc(uid).set({
       'uid': uid,
@@ -118,5 +120,50 @@ class AuthService {
       'status': 'pending', // Now waiting for admin
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  // Upload Image to Firebase Storage
+  Future<String> uploadImage(File file, String path) async {
+    try {
+      Reference ref = FirebaseStorage.instance.ref().child(path);
+      UploadTask uploadTask = ref.putFile(file);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      debugPrint("Image Upload Error: $e");
+      rethrow;
+    }
+  }
+
+  // Submit Student Registration
+  Future<void> submitStudentRegistration({
+    required String uid,
+    required String fullName,
+    required String phone,
+    required String institution,
+    required String profileImageUrl,
+  }) async {
+    await _firestore.collection('users').doc(uid).set({
+      'uid': uid,
+      'name': fullName,
+      'phone': phone,
+      'institution': institution,
+      'profileImage': profileImageUrl,
+      'profileComplete': true,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  // Check if student profile is complete
+  Future<bool> isStudentProfileComplete(String uid) async {
+    try {
+      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return (doc.data() as Map<String, dynamic>)['profileComplete'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'email_login_screen.dart';
 import '../../student/student_dashboard.dart';
+import '../../student/student_registration_screen.dart';
 import '../../driver/driver_dashboard.dart';
 import '../../driver/driver_registration_screen.dart';
 import '../../driver/pending_verification_screen.dart';
@@ -64,7 +65,7 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
       if (widget.appType == 'student') {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const StudentDashboard()),
+          MaterialPageRoute(builder: (_) => const StudentRegistrationScreen()),
           (route) => false,
         );
       } else {
