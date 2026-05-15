@@ -3,7 +3,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import '../core/models/ride_model.dart';
 import '../core/services/payment_service.dart';
 import '../core/services/ride_service.dart';
@@ -28,6 +28,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   MapBoxNavigationViewController? _mapController;
   final PanelController _panelController = PanelController();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController(text: "254");
   bool _hasLocationPermission = false;
   bool _isMapStyleLoaded = false;
 
@@ -127,6 +128,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     initialLongitude: 36.8219,
                     zoom: 15.0,
                     language: "en",
+                    accessToken: _MAPBOX_TOKEN,
                     mapStyleUrlDay: "mapbox://styles/mapbox/streets-v11",
                     mapStyleUrlNight: "mapbox://styles/mapbox/dark-v10",
                   ),
@@ -197,7 +199,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                 child: Row(
                   children: [
-                    const Icon(Icons.search, color: BoltTheme.primaryGreen),
+                    const Icon(Icons.search, color: StDeliTheme.primaryGreen),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
@@ -298,7 +300,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       }
                     }
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: BoltTheme.primaryGreen),
+                  style: ElevatedButton.styleFrom(backgroundColor: StDeliTheme.primaryGreen),
                   child: const Text("Release Payment"),
                 ),
               ),
@@ -369,7 +371,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [BoltTheme.primaryGreen, BoltTheme.primaryGreen.withOpacity(0.8)],
+          colors: [StDeliTheme.primaryGreen, StDeliTheme.primaryGreen.withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -409,7 +411,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     );
   }
 
-  VehicleType _selectedType = VehicleType.bolt;
+  VehicleType _selectedType = VehicleType.stdeli;
 
   void _showRideOptions() {
     showModalBottomSheet(
@@ -429,14 +431,25 @@ class _StudentDashboardState extends State<StudentDashboard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text("Choose a ride", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: "M-Pesa Phone Number",
+                    hintText: "e.g. 254712345678",
+                    prefixIcon: const Icon(Icons.phone_iphone, color: StDeliTheme.primaryGreen),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Expanded(
                   child: ListView(
                     children: [
-                      _buildRideOption("Bolt", "4 min", "KES 350", VehicleType.bolt, setModalState),
-                      _buildRideOption("Bolt EV", "6 min", "KES 320", VehicleType.bolt_ev, setModalState),
+                      _buildRideOption("STDELI", "4 min", "KES 350", VehicleType.stdeli, setModalState),
+                      _buildRideOption("STDELI EV", "6 min", "KES 320", VehicleType.stdeli_ev, setModalState),
                       _buildRideOption("Boda", "2 min", "KES 150", VehicleType.boda, setModalState),
-                      _buildRideOption("Bolt XL", "8 min", "KES 550", VehicleType.bolt_xl, setModalState),
+                      _buildRideOption("STDELI XL", "8 min", "KES 550", VehicleType.stdeli_xl, setModalState),
                     ],
                   ),
                 ),
@@ -464,8 +477,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: selected ? BoltTheme.primaryGreen.withOpacity(0.1) : Colors.white,
-          border: Border.all(color: selected ? BoltTheme.primaryGreen : Colors.grey[300]!, width: 2),
+          color: selected ? StDeliTheme.primaryGreen.withOpacity(0.1) : Colors.white,
+          border: Border.all(color: selected ? StDeliTheme.primaryGreen : Colors.grey[300]!, width: 2),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -475,9 +488,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
               children: [
                 Icon(
                   type == VehicleType.boda ? Icons.motorcycle : 
-                  type == VehicleType.bolt_ev ? Icons.electric_car :
-                  type == VehicleType.bolt_xl ? Icons.airport_shuttle : Icons.local_taxi, 
-                  color: BoltTheme.primaryGreen, 
+                  type == VehicleType.stdeli_ev ? Icons.electric_car :
+                  type == VehicleType.stdeli_xl ? Icons.airport_shuttle : Icons.local_taxi, 
+                  color: StDeliTheme.primaryGreen, 
                   size: 32
                 ),
                 const SizedBox(width: 16),
@@ -501,11 +514,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
   final RideService _rideService = RideService();
 
   void _handlePaymentAndBooking() async {
+    if (_phoneController.text.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a valid M-Pesa number")));
+      return;
+    }
+    
     Navigator.pop(context); // Close selection sheet
     
-    // For demo, we'll use a hardcoded phone number or ask the user
-    // In a real app, this would come from the user's profile
-    String phoneNumber = "0712345678"; 
+    String phoneNumber = _phoneController.text; 
     double amount = _selectedType == VehicleType.boda ? 150.0 : 350.0;
 
     _showPaymentLoading();
@@ -552,7 +568,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       final rideId = await _rideService.createRide(ride);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Ride booked successfully! Searching for riders..."), backgroundColor: BoltTheme.primaryGreen),
+          const SnackBar(content: Text("Ride booked successfully! Searching for riders..."), backgroundColor: StDeliTheme.primaryGreen),
         );
         // TODO: Navigate to Active Ride Screen
       }
@@ -574,7 +590,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(color: BoltTheme.primaryGreen),
+            const CircularProgressIndicator(color: StDeliTheme.primaryGreen),
             const SizedBox(height: 24),
             const Text("Waiting for M-Pesa Prompt...", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),

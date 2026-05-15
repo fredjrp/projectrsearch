@@ -32,6 +32,7 @@ class MapBoxOptions {
     this.mapStyleUrlNight,
     this.padding,
     this.animateBuildRoute,
+    this.accessToken,
     this.showReportFeedbackButton = true,
     this.showEndOfRouteFeedback = true,
     this.enableOnMapTapCallback = false,
@@ -58,8 +59,10 @@ class MapBoxOptions {
     mapStyleUrlNight = option.mapStyleUrlNight;
     padding = option.padding;
     animateBuildRoute = option.animateBuildRoute;
+    accessToken = option.accessToken;
     showReportFeedbackButton = option.showReportFeedbackButton;
     showEndOfRouteFeedback = option.showEndOfRouteFeedback;
+    enableOnMapTapCallback = option.enableOnMapTapCallback;
   }
 
   /// The initial Latitude of the Map View
@@ -154,6 +157,9 @@ class MapBoxOptions {
   /// Should animate the building of the Route. Default is True
   bool? animateBuildRoute;
 
+  /// Mapbox Access Token
+  String? accessToken;
+
   /// When the user long presses on a point on the map, set that
   ///  as the destination
   bool? longPressDestinationEnabled;
@@ -225,6 +231,7 @@ class MapBoxOptions {
     addIfNonNull('showReportFeedbackButton', showReportFeedbackButton);
     addIfNonNull('showEndOfRouteFeedback', showEndOfRouteFeedback);
     addIfNonNull('enableOnMapTapCallback', enableOnMapTapCallback);
+    addIfNonNull('accessToken', accessToken);
 
     return optionsMap;
   }

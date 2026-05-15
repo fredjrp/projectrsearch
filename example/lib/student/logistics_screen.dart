@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import '../core/services/delivery_service.dart';
 import '../core/models/delivery_model.dart';
 import '../core/services/auth_service.dart';
@@ -23,8 +24,10 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _destController = TextEditingController();
   final TextEditingController _pagesController = TextEditingController(text: "1");
+  final TextEditingController _phoneController = TextEditingController(text: "254");
   
-  File? _documentImage;
+  File? _selectedDocument;
+  String? _fileName;
   bool _isLoading = false;
   double _calculatedPrice = 0.0;
   
@@ -49,10 +52,15 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
   }
 
   Future<void> _pickDocument() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'png'],
+    );
+
+    if (result != null) {
       setState(() {
-        _documentImage = File(image.path);
+        _selectedDocument = File(result.files.single.path!);
+        _fileName = result.files.single.name;
       });
     }
   }
@@ -63,14 +71,23 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
       return;
     }
 
+    if (_selectedType == DeliveryType.document && _selectedDocument == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please attach a document")));
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       String uid = FirebaseAuth.instance.currentUser?.uid ?? "demo_user";
       String? docUrl;
 
-      if (_selectedType == DeliveryType.document && _documentImage != null) {
-        docUrl = await _authService.uploadImage(_documentImage!, 'docs/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      if (_selectedType == DeliveryType.document && _selectedDocument != null) {
+        String extension = _fileName?.split('.').last ?? 'file';
+        docUrl = await _authService.uploadImage(
+          _selectedDocument!, 
+          'docs/${DateTime.now().millisecondsSinceEpoch}.$extension'
+        );
         if (docUrl.startsWith('local:')) {
            // Queue for sync if failed
            final localPath = docUrl.replaceFirst('local:', '');
@@ -141,6 +158,16 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
             const SizedBox(height: 32),
             _buildLocationFields(),
             const SizedBox(height: 24),
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: "M-Pesa Phone Number",
+                prefixIcon: const Icon(Icons.phone_iphone),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 24),
             if (_selectedType == DeliveryType.document) _buildPrintingFields(),
             if (_selectedType == DeliveryType.package || _selectedType == DeliveryType.group) _buildPackageFields(),
             const SizedBox(height: 40),
@@ -151,7 +178,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
               height: 56,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitRequest,
-                style: ElevatedButton.styleFrom(backgroundColor: BoltTheme.primaryGreen),
+                style: ElevatedButton.styleFrom(backgroundColor: StDeliTheme.primaryGreen),
                 child: _isLoading 
                   ? const CircularProgressIndicator(color: Colors.white) 
                   : const Text("Confirm & Pay with M-Pesa"),
@@ -177,7 +204,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: selected ? BoltTheme.primaryGreen : Colors.grey[100],
+                color: selected ? StDeliTheme.primaryGreen : Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
@@ -225,11 +252,11 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
         OutlinedButton.icon(
           onPressed: _pickDocument,
           icon: const Icon(Icons.upload_file),
-          label: Text(_documentImage == null ? "Upload Document Photo" : "Document Attached"),
+          label: Text(_fileName ?? "Upload PDF / DOC / Image"),
           style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
         ),
         const SizedBox(height: 8),
-        const Text("Tip: Take a clear photo of the document if you don't have the PDF.", style: TextStyle(color: Colors.grey, fontSize: 12)),
+        const Text("Supported: PDF, Word, JPG, PNG", style: TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );
   }
@@ -276,7 +303,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Total Price", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              Text("KES $_calculatedPrice", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: BoltTheme.primaryGreen)),
+              Text("KES $_calculatedPrice", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: StDeliTheme.primaryGreen)),
             ],
           ),
         ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class BoltTheme {
+class StDeliTheme {
   static const Color primaryGreen = Color(0xFF32C36C);
   static const Color background = Color(0xFFF7F8FA);
   static const Color darkText = Color(0xFF1E2124);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'core/theme/bolt_theme.dart';
+import 'core/theme/stdeli_theme.dart';
 import 'core/auth/login_screen.dart';
 import 'core/widgets/skeleton_loading.dart';
 import 'firebase_options.dart';
@@ -65,7 +65,7 @@ class _StudentAppState extends State<StudentApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Student Rider App',
-      theme: BoltTheme.themeData,
+      theme: StDeliTheme.themeData,
       home: const LoginScreen(appType: 'student'),
     );
   }

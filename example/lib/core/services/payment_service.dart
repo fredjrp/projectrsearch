@@ -13,6 +13,10 @@ class PaymentService {
   static const String _stkPushUrl = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
 
   Future<String?> _getAccessToken() async {
+    if (_consumerKey == "YOUR_CONSUMER_KEY") {
+      print("Warning: M-Pesa credentials not configured. Using Demo Mode.");
+      return "DEMO_TOKEN";
+    }
     String credentials = base64Encode(utf8.encode("$_consumerKey:$_consumerSecret"));
     try {
       final response = await http.get(
@@ -21,9 +25,11 @@ class PaymentService {
       );
       if (response.statusCode == 200) {
         return json.decode(response.body)["access_token"];
+      } else {
+        print("M-Pesa Auth Error: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
-      print("Auth Error: $e");
+      print("Auth Exception: $e");
     }
     return null;
   }
@@ -35,6 +41,14 @@ class PaymentService {
   }) async {
     final token = await _getAccessToken();
     if (token == null) return {"success": false, "message": "Failed to get access token"};
+    
+    if (token == "DEMO_TOKEN") {
+      return {
+        "success": true,
+        "checkoutRequestId": "DEMO_${DateTime.now().millisecondsSinceEpoch}",
+        "message": "Demo Mode: STK Push simulated"
+      };
+    }
 
     final timestamp = DateFormat("yyyyMMddHHmmss").format(DateTime.now());
     final password = base64Encode(utf8.encode("$_shortCode$_passkey$timestamp"));

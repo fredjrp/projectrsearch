@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import 'profile_screen.dart';
 import 'driver_navigation_screen.dart';
 
@@ -122,7 +122,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
             const SizedBox(height: 8),
             Text("Dropoff: ${ride.destinationAddress}"),
             const SizedBox(height: 8),
-            Text("Est. Earnings: KES ${ride.fare}", style: const TextStyle(fontWeight: FontWeight.bold, color: BoltTheme.primaryGreen)),
+            Text("Est. Earnings: KES ${ride.fare}", style: const TextStyle(fontWeight: FontWeight.bold, color: StDeliTheme.primaryGreen)),
             const Divider(height: 24),
             FutureBuilder<DocumentSnapshot>(
               future: FirebaseFirestore.instance.collection('users').doc(ride.studentId).get(),
@@ -305,6 +305,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
               initialLongitude: 36.8219,
               zoom: 15.0,
               language: "en",
+              accessToken: _MAPBOX_TOKEN,
               mapStyleUrlDay: "mapbox://styles/mapbox/streets-v11",
               mapStyleUrlNight: "mapbox://styles/mapbox/dark-v10",
             ),

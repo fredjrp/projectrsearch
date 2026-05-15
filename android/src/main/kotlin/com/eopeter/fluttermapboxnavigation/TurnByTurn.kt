@@ -85,6 +85,13 @@ open class TurnByTurn(
     }
 
     open fun initNavigation() {
+        val options = this.arguments["options"] as? Map<String, Any>
+        val explicitToken = options?.get("accessToken") as? String
+        if (explicitToken != null && explicitToken.isNotEmpty()) {
+            this.token = explicitToken
+            Log.d("TurnByTurn", "Using explicit token from options")
+        }
+
         Log.d("TurnByTurn", "initNavigation called with token: ${this.token?.take(10)}...")
         
         if (this.token == null || this.token!!.isEmpty() || this.token == "YOUR_MAPBOX_ACCESS_TOKEN_GOES_HERE") {

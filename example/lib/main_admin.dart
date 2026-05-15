@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'core/theme/bolt_theme.dart';
+import 'core/theme/stdeli_theme.dart';
 import 'admin/admin_login.dart';
 import 'core/widgets/skeleton_loading.dart';
 import 'firebase_options.dart';
@@ -65,7 +65,7 @@ class _AdminAppState extends State<AdminApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Admin Dashboard',
-      theme: BoltTheme.themeData,
+      theme: StDeliTheme.themeData,
       home: const AdminLoginScreen(),
     );
   }

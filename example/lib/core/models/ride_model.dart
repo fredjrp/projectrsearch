@@ -10,10 +10,10 @@ enum RideStatus {
 }
 
 enum VehicleType {
-  bolt,
-  bolt_ev,
+  stdeli,
+  stdeli_ev,
   boda,
-  bolt_xl
+  stdeli_xl
 }
 
 class Ride {
@@ -69,7 +69,7 @@ class Ride {
       destinationLocation: map['destinationLocation'] as GeoPoint,
       fare: (map['fare'] as num?)?.toDouble() ?? 0.0,
       status: RideStatus.values.firstWhere((e) => e.name == map['status'], orElse: () => RideStatus.pending_payment),
-      vehicleType: VehicleType.values.firstWhere((e) => e.name == map['vehicleType'], orElse: () => VehicleType.bolt),
+      vehicleType: VehicleType.values.firstWhere((e) => e.name == map['vehicleType'], orElse: () => VehicleType.stdeli),
       timestamp: (map['timestamp'] as Timestamp).toDate(),
     );
   }

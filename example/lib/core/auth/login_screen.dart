@@ -7,7 +7,7 @@ import '../../student/student_registration_screen.dart';
 import '../../driver/driver_dashboard.dart';
 import '../../driver/driver_registration_screen.dart';
 import '../../driver/pending_verification_screen.dart';
-import '../theme/bolt_theme.dart';
+import '../theme/stdeli_theme.dart';
 import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
