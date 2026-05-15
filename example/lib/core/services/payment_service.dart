@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 
 class PaymentService {
   // TODO: Replace with your Safaricom Sandbox credentials
-  static const String _consumerKey = "YOUR_CONSUMER_KEY";
-  static const String _consumerSecret = "YOUR_CONSUMER_SECRET";
+  static const String _consumerKey = "aEizgG7giYuSz74sPSToBCCQZKUivki2F0L4i2ObIUQcAvIW";
+  static const String _consumerSecret = "MhAPovMwW1cKge8oOyMPUgfAnNfWRGz9nIlm3xZylU0yZM6doI8nZJQneA2kNMbl";
   static const String _shortCode = "174379"; // Sandbox Shortcode
   static const String _passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"; // Sandbox Passkey
   
@@ -13,9 +13,9 @@ class PaymentService {
   static const String _stkPushUrl = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
 
   Future<String?> _getAccessToken() async {
-    if (_consumerKey == "YOUR_CONSUMER_KEY") {
-      print("Warning: M-Pesa credentials not configured. Using Demo Mode.");
-      return "DEMO_TOKEN";
+    if (_consumerKey.isEmpty || _consumerSecret.isEmpty) {
+      print("CRITICAL: M-Pesa credentials are empty!");
+      return null;
     }
     String credentials = base64Encode(utf8.encode("$_consumerKey:$_consumerSecret"));
     try {
@@ -42,21 +42,17 @@ class PaymentService {
     final token = await _getAccessToken();
     if (token == null) return {"success": false, "message": "Failed to get access token"};
     
-    if (token == "DEMO_TOKEN") {
-      return {
-        "success": true,
-        "checkoutRequestId": "DEMO_${DateTime.now().millisecondsSinceEpoch}",
-        "message": "Demo Mode: STK Push simulated"
-      };
-    }
 
     final timestamp = DateFormat("yyyyMMddHHmmss").format(DateTime.now());
     final password = base64Encode(utf8.encode("$_shortCode$_passkey$timestamp"));
     
     // Normalize phone number to 254...
-    String formattedPhone = phoneNumber.startsWith("0") 
-        ? "254${phoneNumber.substring(1)}" 
-        : phoneNumber.replaceAll("+", "");
+    String formattedPhone = phoneNumber.replaceAll("+", "").replaceAll(" ", "");
+    if (formattedPhone.startsWith("0")) {
+      formattedPhone = "254${formattedPhone.substring(1)}";
+    } else if (formattedPhone.startsWith("7") || formattedPhone.startsWith("1")) {
+      formattedPhone = "254$formattedPhone";
+    }
 
     final body = {
       "BusinessShortCode": _shortCode,
@@ -68,8 +64,8 @@ class PaymentService {
       "PartyB": _shortCode,
       "PhoneNumber": formattedPhone,
       "CallBackURL": callbackUrl,
-      "AccountReference": "BoltClone",
-      "TransactionDesc": "Ride Booking Payment"
+      "AccountReference": "STDELI",
+      "TransactionDesc": "STDELI Payment"
     };
 
     try {
