@@ -8,6 +8,7 @@ import '../core/models/ride_model.dart';
 import '../core/services/payment_service.dart';
 import '../core/services/ride_service.dart';
 import '../core/models/delivery_model.dart';
+import '../core/services/delivery_service.dart';
 import 'profile_screen.dart';
 import 'logistics_screen.dart';
 
