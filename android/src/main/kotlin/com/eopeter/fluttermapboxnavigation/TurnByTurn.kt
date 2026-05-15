@@ -60,7 +60,7 @@ open class TurnByTurn(
 
     private var pointAnnotationManager: PointAnnotationManager? = null
     private var mapView: MapView? = null
-    protected var arguments: Map<*, *>? = null
+    protected var methodArguments: Map<*, *>? = null
 
     private val mapViewObserver = object : MapViewObserver() {
         override fun onAttached(mapView: MapView) {
@@ -86,7 +86,7 @@ open class TurnByTurn(
     }
 
     open fun initNavigation() {
-        val options = this.arguments?.get("options") as? Map<String, Any>
+        val options = this.methodArguments?.get("options") as? Map<String, Any>
         val explicitToken = options?.get("accessToken") as? String
         if (explicitToken != null && explicitToken.isNotEmpty()) {
             this.token = explicitToken
@@ -330,7 +330,7 @@ open class TurnByTurn(
     }
 
     open fun setOptions(arguments: Map<*, *>) {
-        this.arguments = arguments
+        this.methodArguments = arguments
         this.token = arguments["accessToken"] as? String
             ?: try {
                 context.getString(context.resources.getIdentifier("mapbox_access_token", "string", context.packageName))
