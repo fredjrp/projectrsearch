@@ -7,7 +7,9 @@ import '../core/theme/bolt_theme.dart';
 import '../core/models/ride_model.dart';
 import '../core/services/payment_service.dart';
 import '../core/services/ride_service.dart';
+import '../core/models/delivery_model.dart';
 import 'profile_screen.dart';
+import 'logistics_screen.dart';
 
 const String _MAPBOX_TOKEN = String.fromEnvironment(
   'MAPBOX_ACCESS_TOKEN',
@@ -212,6 +214,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 ),
               ),
               const SizedBox(height: 24),
+              _buildActiveDeliveries(),
+              const SizedBox(height: 24),
+              _buildServicesGrid(),
+              const SizedBox(height: 24),
               // Promo Banner
               _buildPromoBanner(),
               const SizedBox(height: 24),
@@ -222,6 +228,137 @@ class _StudentDashboardState extends State<StudentDashboard> {
           ),
         );
       }
+    );
+  }
+
+  final DeliveryService _deliveryService = DeliveryService();
+
+  Widget _buildActiveDeliveries() {
+    return StreamBuilder<List<DeliveryRequest>>(
+      stream: _deliveryService.getStudentDeliveries("demo_student_123"), // Replace with actual UID
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) return const SizedBox.shrink();
+
+        final active = snapshot.data!.where((d) => d.status != DeliveryStatus.completed && d.status != DeliveryStatus.cancelled).toList();
+        if (active.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Active Logistics", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            ...active.map((delivery) => _buildDeliveryCard(delivery)).toList(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDeliveryCard(DeliveryRequest delivery) {
+    bool isDelivered = delivery.status == DeliveryStatus.delivered;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(
+                  delivery.type == DeliveryType.document ? Icons.print : Icons.inventory_2,
+                  color: isDelivered ? Colors.green : Colors.orange,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("${delivery.type.name.toUpperCase()} - ${delivery.status.name}", 
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text("To: ${delivery.destinationAddress}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                Text("KES ${delivery.totalFare}", style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            if (isDelivered) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (delivery.riderId != null) {
+                      await _deliveryService.releasePayment(delivery.id, delivery.riderId!, delivery.totalFare);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Payment released to rider!")));
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: BoltTheme.primaryGreen),
+                  child: const Text("Release Payment"),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServicesGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Our Services", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            _buildServiceCard("Ride", Icons.local_taxi, Colors.green, () => _panelController.open()),
+            _buildServiceCard("Package", Icons.inventory_2_outlined, Colors.blue, () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LogisticsScreen(initialType: DeliveryType.package)));
+            }),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _buildServiceCard("Print", Icons.print_outlined, Colors.orange, () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LogisticsScreen(initialType: DeliveryType.document)));
+            }),
+            _buildServiceCard("Group", Icons.groups_outlined, Colors.purple, () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LogisticsScreen(initialType: DeliveryType.group)));
+            }),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServiceCard(String title, IconData icon, Color color, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 12),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

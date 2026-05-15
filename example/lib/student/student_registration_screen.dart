@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../core/theme/bolt_theme.dart';
 import '../core/services/auth_service.dart';
+import '../core/services/sync_service.dart';
 import 'student_dashboard.dart';
 
 class StudentRegistrationScreen extends StatefulWidget {
@@ -54,11 +55,23 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
     try {
       String uid = FirebaseAuth.instance.currentUser!.uid;
       
-      // 1. Upload Image
+      // 1. Upload Image (with fallback)
       String imageUrl = await _authService.uploadImage(
         _imageFile!,
         'profile_pics/$uid.jpg',
       );
+      
+      // If upload failed and returned a local path, queue it for sync
+      if (imageUrl.startsWith('local:')) {
+        final localPath = imageUrl.replaceFirst('local:', '');
+        await SyncService().addToQueue(
+          uid: uid,
+          localPath: localPath,
+          storagePath: 'profile_pics/$uid.jpg',
+          collection: 'users',
+          field: 'profileImage',
+        );
+      }
       
       // 2. Submit Data
       await _authService.submitStudentRegistration(

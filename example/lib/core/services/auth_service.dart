@@ -122,7 +122,7 @@ class AuthService {
     }, SetOptions(merge: true));
   }
 
-  // Upload Image to Firebase Storage
+  // Upload Image to Firebase Storage with Fallback
   Future<String> uploadImage(File file, String path) async {
     try {
       Reference ref = FirebaseStorage.instance.ref().child(path);
@@ -130,8 +130,9 @@ class AuthService {
       TaskSnapshot snapshot = await uploadTask;
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
-      debugPrint("Image Upload Error: $e");
-      rethrow;
+      debugPrint("Firebase Storage Error: $e. Falling back to local storage.");
+      // If Firebase fails, we return the local path with a 'local:' prefix
+      return "local:${file.path}";
     }
   }
 

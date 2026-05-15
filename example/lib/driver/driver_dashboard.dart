@@ -10,6 +10,8 @@ import 'driver_navigation_screen.dart';
 
 import '../core/models/ride_model.dart';
 import '../core/services/ride_service.dart';
+import '../core/models/delivery_model.dart';
+import '../core/services/delivery_service.dart';
 
 const String _MAPBOX_TOKEN = String.fromEnvironment(
   'MAPBOX_ACCESS_TOKEN',
@@ -28,7 +30,9 @@ class _DriverDashboardState extends State<DriverDashboard> {
   bool _hasLocationPermission = false;
   StreamSubscription<Position>? _positionStream;
   StreamSubscription<List<Ride>>? _rideSubscription;
+  StreamSubscription<List<DeliveryRequest>>? _deliverySubscription;
   final RideService _rideService = RideService();
+  final DeliveryService _deliveryService = DeliveryService();
   double _walletBalance = 0.0;
 
   @override
@@ -65,6 +69,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
   void dispose() {
     _positionStream?.cancel();
     _rideSubscription?.cancel();
+    _deliverySubscription?.cancel();
     _setOfflineInFirestore();
     super.dispose();
   }
@@ -77,18 +82,27 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
     if (_isOnline) {
       _startLocationUpdates();
-      _startRideListener();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You are now online! Listening for rides...")));
+      _startListeners();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You are now online! Listening for requests...")));
     } else {
       _stopLocationUpdates();
       _rideSubscription?.cancel();
+      _deliverySubscription?.cancel();
     }
   }
 
-  void _startRideListener() {
+  void _startListeners() {
+    // Ride Listener
     _rideSubscription = _rideService.getAvailableRides().listen((rides) {
       if (rides.isNotEmpty && _isOnline) {
         _showRideRequestDialog(rides.first);
+      }
+    });
+
+    // Delivery/Logistics Listener
+    _deliverySubscription = _deliveryService.getAvailableDeliveries().listen((deliveries) {
+      if (deliveries.isNotEmpty && _isOnline) {
+        _showDeliveryRequestDialog(deliveries.first);
       }
     });
   }
@@ -153,6 +167,78 @@ class _DriverDashboardState extends State<DriverDashboard> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeliveryRequestDialog(DeliveryRequest delivery) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text("New ${delivery.type.name.toUpperCase()} Request!"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Pickup: ${delivery.pickupAddress}"),
+            const SizedBox(height: 8),
+            Text("Dropoff: ${delivery.destinationAddress}"),
+            const SizedBox(height: 16),
+            if (delivery.type == DeliveryType.document) ...[
+              const Text("Service: Document Printing", style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Pages: ${delivery.pageCount}"),
+            ] else if (delivery.type == DeliveryType.package) ...[
+              const Text("Service: Package Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Item: ${delivery.itemDescription ?? 'Package'}"),
+            ],
+            const SizedBox(height: 16),
+            Text("Earnings: KES ${delivery.totalFare}", style: const TextStyle(fontWeight: FontWeight.bold, color: BoltTheme.primaryGreen)),
+            const Divider(height: 24),
+            _buildStudentInfo(delivery.studentId),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Decline", style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              String? uid = FirebaseAuth.instance.currentUser?.uid;
+              if (uid != null) {
+                await _deliveryService.updateStatus(delivery.id, DeliveryStatus.accepted);
+                if (mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Request Accepted!")));
+                }
+              }
+            },
+            child: const Text("Accept"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudentInfo(String studentId) {
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('users').doc(studentId).get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const LinearProgressIndicator();
+        final studentData = snapshot.data!.data() as Map<String, dynamic>?;
+        final studentName = studentData?['name'] ?? 'Student';
+        final studentPhoto = studentData?['profileImage'] ?? '';
+        
+        return Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: studentPhoto.isNotEmpty ? NetworkImage(studentPhoto) : null,
+              child: studentPhoto.isEmpty ? const Icon(Icons.person) : null,
+            ),
+            const SizedBox(width: 12),
+            Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        );
+      },
     );
   }
 

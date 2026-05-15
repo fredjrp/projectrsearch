@@ -3,12 +3,17 @@ import 'package:firebase_core/firebase_core.dart';
 import 'onboarding_screen.dart';
 import 'app.dart';
 import 'firebase_options.dart';
+import 'core/services/sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Trigger background sync for any pending image uploads
+  SyncService().syncNow();
+  
   runApp(const MyApp());
 }
 

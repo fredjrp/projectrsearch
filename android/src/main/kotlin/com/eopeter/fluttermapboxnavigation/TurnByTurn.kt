@@ -88,7 +88,18 @@ open class TurnByTurn(
         Log.d("TurnByTurn", "initNavigation called with token: ${this.token?.take(10)}...")
         
         if (this.token == null || this.token!!.isEmpty() || this.token == "YOUR_MAPBOX_ACCESS_TOKEN_GOES_HERE") {
-            Log.e("TurnByTurn", "ABORTING: Token is missing or placeholder!")
+            Log.w("TurnByTurn", "Token is missing or placeholder, trying to fetch from resources...")
+            try {
+                this.token = PluginUtilities.getResourceFromContext(this.context, "mapbox_access_token")
+            } catch (e: Exception) {
+                Log.e("TurnByTurn", "Failed to fetch token from resources: ${e.message}")
+                // Final fallback to the token found in the project strings
+                this.token = "pk.eyJ1IjoiZnJlZGp5IiwiYSI6ImNtbmphZ2tiMDBnMjQycnFyNnh0cXF0cmYifQ.eubs9uIGOVmbyfXJakLo9g"
+            }
+        }
+
+        if (this.token == null || this.token!!.isEmpty()) {
+            Log.e("TurnByTurn", "ABORTING: No valid Mapbox token found!")
             return
         }
 

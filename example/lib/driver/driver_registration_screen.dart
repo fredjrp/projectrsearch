@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../core/theme/bolt_theme.dart';
 import '../core/services/auth_service.dart';
+import '../core/services/sync_service.dart';
 import 'pending_verification_screen.dart';
 
 class DriverRegistrationScreen extends StatefulWidget {
@@ -17,17 +20,32 @@ class _DriverRegistrationScreenState extends State<DriverRegistrationScreen> {
   final TextEditingController _licensePlateController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   
+  File? _licenseImage;
+  final ImagePicker _picker = ImagePicker();
   bool _agreedToTerms = false;
   bool _isLoading = false;
   String _errorMessage = '';
   final AuthService _authService = AuthService();
 
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _licenseImage = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _submitRegistration() async {
     if (_vehicleMakeController.text.isEmpty ||
         _vehicleModelController.text.isEmpty ||
-        _licensePlateController.text.isEmpty ||
         _contactController.text.isEmpty) {
       setState(() => _errorMessage = 'Please fill in all details.');
+      return;
+    }
+
+    if (_licenseImage == null) {
+      setState(() => _errorMessage = 'Please upload your license photo.');
       return;
     }
 
@@ -43,15 +61,32 @@ class _DriverRegistrationScreenState extends State<DriverRegistrationScreen> {
 
     try {
       String uid = FirebaseAuth.instance.currentUser!.uid;
-      // Combine Make and Model for simplicity in the service layer
-      String makeModel = '${_vehicleMakeController.text} ${_vehicleModelController.text}';
+      // 1. Upload License Image
+      String licenseUrl = await _authService.uploadImage(
+        _licenseImage!,
+        'license_photos/$uid.jpg',
+      );
       
+      // If upload failed, queue for sync
+      if (licenseUrl.startsWith('local:')) {
+        final localPath = licenseUrl.replaceFirst('local:', '');
+        await SyncService().addToQueue(
+          uid: uid,
+          localPath: localPath,
+          storagePath: 'license_photos/$uid.jpg',
+          collection: 'drivers',
+          field: 'licensePhoto',
+        );
+      }
+      
+      // 2. Submit Data
+      String makeModel = '${_vehicleMakeController.text} ${_vehicleModelController.text}';
       await _authService.submitDriverRegistration(
         uid: uid,
         vehicleMake: makeModel,
         licensePlate: _licensePlateController.text,
         phone: _contactController.text,
-        licensePhotoPath: 'pending_upload', // Placeholder for now
+        licensePhotoPath: licenseUrl,
       );
 
       if (!mounted) return;
@@ -113,20 +148,29 @@ class _DriverRegistrationScreenState extends State<DriverRegistrationScreen> {
               decoration: const InputDecoration(labelText: 'Contact Phone Number'),
             ),
             const SizedBox(height: 24),
-            // Mock Driver's License Upload Button
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: const [
-                  Icon(Icons.camera_alt, color: BoltTheme.primaryGreen, size: 40),
-                  SizedBox(height: 8),
-                  Text('Upload Driver\'s License Photo', style: TextStyle(color: BoltTheme.primaryGreen)),
-                ],
+            // Driver's License Upload Button
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                  image: _licenseImage != null 
+                    ? DecorationImage(image: FileImage(_licenseImage!), fit: BoxFit.cover, opacity: 0.3)
+                    : null,
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.camera_alt, color: BoltTheme.primaryGreen, size: 40),
+                    const SizedBox(height: 8),
+                    Text(
+                      _licenseImage == null ? 'Upload Driver\'s License Photo' : 'Change License Photo',
+                      style: const TextStyle(color: BoltTheme.primaryGreen, fontWeight: FontWeight.bold)
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
