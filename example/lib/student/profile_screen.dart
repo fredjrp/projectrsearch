@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import 'update_profile_screen.dart';
 import 'ride_history_screen.dart';
 import 'support_screen.dart';
@@ -27,7 +27,7 @@ class StudentProfileScreen extends StatelessWidget {
         }
 
         return Scaffold(
-          backgroundColor: BoltTheme.background,
+          backgroundColor: StDeliTheme.background,
           appBar: AppBar(
             backgroundColor: Colors.white,
             elevation: 0,
@@ -60,7 +60,7 @@ class StudentProfileScreen extends StatelessWidget {
                               onTap: () {
                                 Navigator.push(context, MaterialPageRoute(builder: (_) => UpdateProfileScreen(userData: userData)));
                               },
-                              child: const Text("Edit Profile", style: TextStyle(color: BoltTheme.primaryGreen, fontWeight: FontWeight.bold)),
+                              child: const Text("Edit Profile", style: TextStyle(color: StDeliTheme.primaryGreen, fontWeight: FontWeight.bold)),
                             )
                           ],
                         ),
@@ -103,7 +103,7 @@ class StudentProfileScreen extends StatelessWidget {
       color: Colors.white,
       margin: const EdgeInsets.only(bottom: 1),
       child: ListTile(
-        leading: Icon(icon, color: BoltTheme.darkText),
+        leading: Icon(icon, color: StDeliTheme.darkText),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: onTap,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import 'live_map_screen.dart';
 import 'sos_management_screen.dart';
 
@@ -33,7 +33,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BoltTheme.background,
+      backgroundColor: StDeliTheme.background,
       body: Row(
         children: [
           // Side Navigation Rail
@@ -46,8 +46,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             },
             labelType: NavigationRailLabelType.all,
             backgroundColor: Colors.white,
-            selectedIconTheme: const IconThemeData(color: BoltTheme.primaryGreen),
-            selectedLabelTextStyle: const TextStyle(color: BoltTheme.primaryGreen, fontWeight: FontWeight.bold),
+            selectedIconTheme: const IconThemeData(color: StDeliTheme.primaryGreen),
+            selectedLabelTextStyle: const TextStyle(color: StDeliTheme.primaryGreen, fontWeight: FontWeight.bold),
             destinations: const [
               NavigationRailDestination(
                 icon: Icon(Icons.dashboard_outlined),
@@ -169,11 +169,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       FlSpot(7, 800),
                     ],
                     isCurved: true,
-                    color: BoltTheme.primaryGreen,
+                    color: StDeliTheme.primaryGreen,
                     barWidth: 4,
                     belowBarData: BarAreaData(
                       show: true,
-                      color: BoltTheme.primaryGreen.withOpacity(0.2),
+                      color: StDeliTheme.primaryGreen.withOpacity(0.2),
                     ),
                   ),
                 ],
@@ -201,7 +201,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(title, style: TextStyle(color: isAlert ? Colors.red : Colors.grey, fontWeight: FontWeight.bold)),
-              Icon(icon, color: isAlert ? Colors.red : BoltTheme.primaryGreen),
+              Icon(icon, color: isAlert ? Colors.red : StDeliTheme.primaryGreen),
             ],
           ),
           const SizedBox(height: 16),
@@ -215,15 +215,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: BoltTheme.background,
+        backgroundColor: StDeliTheme.background,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: const Text("User Management", style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
           bottom: const TabBar(
-            labelColor: BoltTheme.primaryGreen,
+            labelColor: StDeliTheme.primaryGreen,
             unselectedLabelColor: Colors.grey,
-            indicatorColor: BoltTheme.primaryGreen,
+            indicatorColor: StDeliTheme.primaryGreen,
             tabs: [
               Tab(text: "Students"),
               Tab(text: "Drivers"),

@@ -5,7 +5,7 @@ import '../../student/student_registration_screen.dart';
 import '../../driver/driver_dashboard.dart';
 import '../../driver/driver_registration_screen.dart';
 import '../../driver/pending_verification_screen.dart';
-import '../theme/bolt_theme.dart';
+import '../theme/stdeli_theme.dart';
 import '../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -119,12 +119,12 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
             children: [
               const Text(
                 'Create account',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: StDeliTheme.darkText),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Sign up with your email to get started.',
-                style: TextStyle(fontSize: 16, color: BoltTheme.greyText),
+                style: TextStyle(fontSize: 16, color: StDeliTheme.greyText),
               ),
               const SizedBox(height: 32),
               TextField(
@@ -167,7 +167,7 @@ class _EmailSignupScreenState extends State<EmailSignupScreen> {
                       MaterialPageRoute(builder: (_) => EmailLoginScreen(appType: widget.appType)),
                     );
                   },
-                  child: const Text('Already have an account? Login', style: TextStyle(color: BoltTheme.primaryGreen)),
+                  child: const Text('Already have an account? Login', style: TextStyle(color: StDeliTheme.primaryGreen)),
                 ),
               ),
             ],

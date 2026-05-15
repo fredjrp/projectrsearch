@@ -49,7 +49,7 @@ class RideService {
         destinationLocation: const GeoPoint(-1.2635, 36.8028),
         fare: 450.0,
         status: RideStatus.completed,
-        vehicleType: VehicleType.bolt,
+        vehicleType: VehicleType.stdeli,
         timestamp: DateTime.now().subtract(const Duration(days: 1)),
       ),
       Ride(

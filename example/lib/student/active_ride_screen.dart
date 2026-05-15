@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 
 class ActiveRideScreen extends StatefulWidget {
   const ActiveRideScreen({Key? key}) : super(key: key);
@@ -103,10 +103,10 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: BoltTheme.primaryGreen.withOpacity(0.1),
+                          color: StDeliTheme.primaryGreen.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.phone, color: BoltTheme.primaryGreen),
+                        child: const Icon(Icons.phone, color: StDeliTheme.primaryGreen),
                       ),
                     ],
                   ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 
 class DriverProfileScreen extends StatelessWidget {
   const DriverProfileScreen({Key? key}) : super(key: key);
@@ -7,7 +7,7 @@ class DriverProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BoltTheme.background,
+      backgroundColor: StDeliTheme.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -67,7 +67,7 @@ class DriverProfileScreen extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: ListTile(
-        leading: Icon(icon, color: BoltTheme.darkText),
+        leading: Icon(icon, color: StDeliTheme.darkText),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: () {},

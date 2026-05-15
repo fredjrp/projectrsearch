@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import '../core/widgets/mapbox_static_map.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -100,7 +100,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                     markers.add(MapMarker(
                       latitude: data['lat'],
                       longitude: data['lng'],
-                      color: BoltTheme.primaryGreen,
+                      color: StDeliTheme.primaryGreen,
                     ));
                   }
                 }
@@ -153,7 +153,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
         children: [
           Row(
             children: [
-              Container(width: 12, height: 12, color: BoltTheme.primaryGreen),
+              Container(width: 12, height: 12, color: StDeliTheme.primaryGreen),
               const SizedBox(width: 8),
               const Text("Available Drivers"),
             ],

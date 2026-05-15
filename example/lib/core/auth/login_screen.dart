@@ -156,14 +156,14 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text(
                 _codeSent ? 'Enter code' : 'Enter your number',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: StDeliTheme.darkText),
               ),
               const SizedBox(height: 8),
               Text(
                 _codeSent 
                   ? 'We sent a 6-digit code to ${_phoneController.text}'
                   : 'We will send you a code to verify your mobile number.',
-                style: const TextStyle(fontSize: 16, color: BoltTheme.greyText),
+                style: const TextStyle(fontSize: 16, color: StDeliTheme.greyText),
               ),
               const SizedBox(height: 32),
               
@@ -208,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             MaterialPageRoute(builder: (_) => EmailSignupScreen(appType: widget.appType)),
                           );
                         },
-                        child: const Text('Don\'t have an account? Sign up', style: TextStyle(color: BoltTheme.primaryGreen)),
+                        child: const Text('Don\'t have an account? Sign up', style: TextStyle(color: StDeliTheme.primaryGreen)),
                       ),
                     ),
                     Center(

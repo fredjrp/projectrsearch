@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/sync_service.dart';
 import 'pending_verification_screen.dart';
@@ -119,12 +119,12 @@ class _DriverRegistrationScreenState extends State<DriverRegistrationScreen> {
           children: [
             const Text(
               'Complete your profile',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: StDeliTheme.darkText),
             ),
             const SizedBox(height: 8),
             const Text(
               'Provide your vehicle details and contact info to proceed.',
-              style: TextStyle(color: BoltTheme.greyText),
+              style: TextStyle(color: StDeliTheme.greyText),
             ),
             const SizedBox(height: 24),
             TextField(
@@ -163,11 +163,11 @@ class _DriverRegistrationScreenState extends State<DriverRegistrationScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.camera_alt, color: BoltTheme.primaryGreen, size: 40),
+                    const Icon(Icons.camera_alt, color: StDeliTheme.primaryGreen, size: 40),
                     const SizedBox(height: 8),
                     Text(
                       _licenseImage == null ? 'Upload Driver\'s License Photo' : 'Change License Photo',
-                      style: const TextStyle(color: BoltTheme.primaryGreen, fontWeight: FontWeight.bold)
+                      style: const TextStyle(color: StDeliTheme.primaryGreen, fontWeight: FontWeight.bold)
                     ),
                   ],
                 ),
@@ -181,7 +181,7 @@ class _DriverRegistrationScreenState extends State<DriverRegistrationScreen> {
                   onChanged: (val) {
                     setState(() => _agreedToTerms = val ?? false);
                   },
-                  activeColor: BoltTheme.primaryGreen,
+                  activeColor: StDeliTheme.primaryGreen,
                 ),
                 const Expanded(
                   child: Text(

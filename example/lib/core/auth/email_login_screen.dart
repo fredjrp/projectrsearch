@@ -5,7 +5,7 @@ import '../../student/student_registration_screen.dart';
 import '../../driver/driver_dashboard.dart';
 import '../../driver/driver_registration_screen.dart';
 import '../../driver/pending_verification_screen.dart';
-import '../theme/bolt_theme.dart';
+import '../theme/stdeli_theme.dart';
 import '../services/auth_service.dart';
 
 class EmailLoginScreen extends StatefulWidget {
@@ -117,12 +117,12 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
             children: [
               const Text(
                 'Welcome Back',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: StDeliTheme.darkText),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Login to continue with your account.',
-                style: TextStyle(fontSize: 16, color: BoltTheme.greyText),
+                style: TextStyle(fontSize: 16, color: StDeliTheme.greyText),
               ),
               const SizedBox(height: 32),
               TextField(

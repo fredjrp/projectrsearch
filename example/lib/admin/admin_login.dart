@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import 'admin_dashboard.dart';
 
 class AdminLoginScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BoltTheme.background,
+      backgroundColor: StDeliTheme.background,
       body: Center(
         child: Container(
           width: 400,
@@ -38,7 +38,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.admin_panel_settings, size: 64, color: BoltTheme.primaryGreen),
+              const Icon(Icons.admin_panel_settings, size: 64, color: StDeliTheme.primaryGreen),
               const SizedBox(height: 16),
               const Text("Admin Portal", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 32),

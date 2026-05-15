@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../core/auth/login_screen.dart';
 
@@ -39,13 +39,13 @@ class PendingVerificationScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: BoltTheme.primaryGreen.withOpacity(0.1),
+                  color: StDeliTheme.primaryGreen.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.hourglass_empty,
                   size: 64,
-                  color: BoltTheme.primaryGreen,
+                  color: StDeliTheme.primaryGreen,
                 ),
               ),
               const SizedBox(height: 32),
@@ -54,7 +54,7 @@ class PendingVerificationScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: BoltTheme.darkText,
+                  color: StDeliTheme.darkText,
                 ),
               ),
               const SizedBox(height: 16),
@@ -63,7 +63,7 @@ class PendingVerificationScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: BoltTheme.greyText,
+                  color: StDeliTheme.greyText,
                   height: 1.5,
                 ),
               ),
@@ -78,8 +78,8 @@ class PendingVerificationScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: BoltTheme.primaryGreen,
-                  side: const BorderSide(color: BoltTheme.primaryGreen),
+                  foregroundColor: StDeliTheme.primaryGreen,
+                  side: const BorderSide(color: StDeliTheme.primaryGreen),
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 child: const Text('Refresh Status'),

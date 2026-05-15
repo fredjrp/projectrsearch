@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 
 class RideHistoryScreen extends StatelessWidget {
   const RideHistoryScreen({Key? key}) : super(key: key);
@@ -34,7 +34,7 @@ class RideHistoryScreen extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
-                  leading: const CircleAvatar(backgroundColor: BoltTheme.primaryGreen, child: Icon(Icons.local_taxi, color: Colors.white)),
+                  leading: const CircleAvatar(backgroundColor: StDeliTheme.primaryGreen, child: Icon(Icons.local_taxi, color: Colors.white)),
                   title: Text(ride['destinationAddress'] ?? "Unknown Destination"),
                   subtitle: Text(DateFormat('dd MMM yyyy, HH:mm').format(date)),
                   trailing: Text("KES ${ride['fare']}", style: const TextStyle(fontWeight: FontWeight.bold)),

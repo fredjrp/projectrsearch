@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/sync_service.dart';
 import 'student_dashboard.dart';
@@ -112,12 +112,12 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
           children: [
             const Text(
               'Tell us about yourself',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: BoltTheme.darkText),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: StDeliTheme.darkText),
             ),
             const SizedBox(height: 8),
             const Text(
               'This information helps drivers identify and contact you.',
-              style: TextStyle(color: BoltTheme.greyText),
+              style: TextStyle(color: StDeliTheme.greyText),
             ),
             const SizedBox(height: 32),
             
@@ -141,7 +141,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: const BoxDecoration(
-                          color: BoltTheme.primaryGreen,
+                          color: StDeliTheme.primaryGreen,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
@@ -191,7 +191,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitRegistration,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: BoltTheme.primaryGreen,
+                  backgroundColor: StDeliTheme.primaryGreen,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _isLoading

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 
 class SosManagementScreen extends StatelessWidget {
   const SosManagementScreen({Key? key}) : super(key: key);
@@ -8,7 +8,7 @@ class SosManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BoltTheme.background,
+      backgroundColor: StDeliTheme.background,
       appBar: AppBar(
         title: const Text("SOS Alert Management", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,

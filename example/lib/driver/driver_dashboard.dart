@@ -193,7 +193,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
               Text("Item: ${delivery.itemDescription ?? 'Package'}"),
             ],
             const SizedBox(height: 16),
-            Text("Earnings: KES ${delivery.totalFare}", style: const TextStyle(fontWeight: FontWeight.bold, color: BoltTheme.primaryGreen)),
+            Text("Earnings: KES ${delivery.totalFare}", style: const TextStyle(fontWeight: FontWeight.bold, color: StDeliTheme.primaryGreen)),
             const Divider(height: 24),
             _buildStudentInfo(delivery.studentId),
           ],
@@ -356,7 +356,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                   height: 64,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: _isOnline ? Colors.red : BoltTheme.primaryGreen,
+                    color: _isOnline ? Colors.red : StDeliTheme.primaryGreen,
                     borderRadius: BorderRadius.circular(32),
                     boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))],
                   ),

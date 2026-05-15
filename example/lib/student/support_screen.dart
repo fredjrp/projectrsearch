@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 
 class SupportScreen extends StatelessWidget {
   const SupportScreen({Key? key}) : super(key: key);
@@ -40,7 +40,7 @@ class SupportScreen extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: ListTile(
-        leading: Icon(icon, color: BoltTheme.primaryGreen),
+        leading: Icon(icon, color: StDeliTheme.primaryGreen),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),
         onTap: () {},

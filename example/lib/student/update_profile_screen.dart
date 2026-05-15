@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../core/theme/bolt_theme.dart';
+import '../core/theme/stdeli_theme.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -58,7 +58,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               height: 56,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _updateProfile,
-                style: ElevatedButton.styleFrom(backgroundColor: BoltTheme.primaryGreen),
+                style: ElevatedButton.styleFrom(backgroundColor: StDeliTheme.primaryGreen),
                 child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text("Save Changes"),
               ),
             )
